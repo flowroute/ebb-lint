@@ -27,7 +27,11 @@ setup(
     description='tools for developing quality software',
     author='Flowroute Inc.',
     author_email='development@flowroute.com',
-    packages=['ebb_devtools'],
+    packages=[
+        'ebb_devtools',
+        'ebb_devtools.lint',
+        'ebb_devtools.lint.test',
+    ],
     install_requires=[
         'enum34',
         'flake8',
