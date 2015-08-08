@@ -1,4 +1,4 @@
-*** TODO [2/9]
+*** TODO [3/9]
  - [ ] check for excess stuff in __init__.py
    - [ ] no functions
    - [ ] no classes
@@ -13,4 +13,4 @@
    - [ ] enforce u''.format or b''.format but not ''.format?
    - [ ] how many positional before requiring names?
  - [ ] check for redundant words ('function', 'class') in docstrings
- - [ ] disallow print and pdb imports
+ - [X] disallow print and pdb imports
