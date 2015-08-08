@@ -29,3 +29,9 @@ class Errors(enum.Enum):
         201,
         'container literals must have a trailing comma following the last '
         'element')
+    no_print = Error(
+        202,
+        'print is only allowed while debugging; use logging in real code')
+    no_pdb = Error(
+        203,
+        'pdb imports are only allowed while debugging')

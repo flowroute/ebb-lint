@@ -61,6 +61,45 @@ class Spam(object):
     """
 
     ''',
+
+    '''
+
+$L202$print 'hi'
+
+    ''',
+
+    '''
+
+$L202$print
+
+    ''',
+
+    '''
+
+$L202$print >> aether, 'hi'
+
+    ''',
+
+    '''
+
+import $L203$pdb
+pdb.set_trace()
+
+    ''',
+
+    '''
+
+import $L203$pdb as not_pdb
+not_pdb.set_trace()
+
+    ''',
+
+    '''
+
+from $L203$pdb import set_trace
+set_trace()
+
+    ''',
 ]
 
 
