@@ -1,15 +1,16 @@
-*** TODO [0/8]
+*** TODO [2/9]
  - [ ] check for excess stuff in __init__.py
    - [ ] no functions
    - [ ] no classes
    - [ ] nothing but imports and __all__
- - [ ] enforce trailing commas
+ - [X] enforce trailing commas
  - [ ] enforce parens around implicit string literal concatentation
  - [ ] no implicit relative imports
  - [ ] enforce isort (does isort have an API?)
- - [ ] see if anything can be done about determining where in a docstring errors are
+ - [X] see if anything can be done about determining where in a docstring errors are
  - [ ] determine what to do about string formatting
    - [ ] disallow % entirely?
    - [ ] enforce u''.format or b''.format but not ''.format?
    - [ ] how many positional before requiring names?
  - [ ] check for redundant words ('function', 'class') in docstrings
+ - [ ] disallow print and pdb imports
