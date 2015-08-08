@@ -22,3 +22,10 @@ class Errors(enum.Enum):
     use_napoleon_in_docstrings = Error(
         104,
         'use sphinx.ext.napoleon instead of reST fields like :{field}:')
+
+    dubious_syntax_category = Error(
+        200, 'errors related to dubious syntax')
+    no_trailing_comma_in_literal = Error(
+        201,
+        'container literals must have a trailing comma following the last '
+        'element')

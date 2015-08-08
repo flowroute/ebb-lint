@@ -12,6 +12,7 @@ extras_require = {
     'dev': [
         'coverage',
         'pytest',
+        'pytest-cov',
     ],
 }
 
@@ -30,18 +31,19 @@ setup(
     packages=[
         'ebb_devtools',
         'ebb_devtools.lint',
+        'ebb_devtools.lint.checkers',
         'ebb_devtools.lint.test',
     ],
     install_requires=[
         'enum34',
         'flake8',
-        'parsley',
+        'venusian',
     ],
     extras_require=extras_require,
     setup_requires=['vcversioner'],
     entry_points={
         'flake8.extension': [
             'L = ebb_devtools.lint:EbbLint',
-        ]
+        ],
     },
 )
