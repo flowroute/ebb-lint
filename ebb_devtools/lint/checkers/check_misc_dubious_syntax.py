@@ -11,7 +11,16 @@ from ebb_devtools.lint.errors import Errors
 
 """)
 def check_for_pdb(pdb):
-    yield pdb, Errors.no_pdb, {}
+    yield pdb, Errors.no_debuggers, {}
+
+
+@register_checker("""
+
+power< any+ trailer< '.' func='set_trace' > trailer< '(' ')' > >
+
+""")
+def check_for_set_trace(func):
+    yield func, Errors.no_debuggers, {}
 
 
 @register_checker("""

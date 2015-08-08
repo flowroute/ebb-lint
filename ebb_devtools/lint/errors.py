@@ -32,6 +32,7 @@ class Errors(enum.Enum):
     no_print = Error(
         202,
         'print is only allowed while debugging; use logging in real code')
-    no_pdb = Error(
+    no_debuggers = Error(
         203,
-        'pdb imports are only allowed while debugging')
+        'debuggers are only allowed while debugging; make sure to remove this '
+        'before committing')

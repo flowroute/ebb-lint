@@ -83,14 +83,14 @@ $L202$print >> aether, 'hi'
     '''
 
 import $L203$pdb
-pdb.set_trace()
+pdb.$L203$set_trace()
 
     ''',
 
     '''
 
 import $L203$pdb as not_pdb
-not_pdb.set_trace()
+not_pdb.$L203$set_trace()
 
     ''',
 
@@ -98,6 +98,13 @@ not_pdb.set_trace()
 
 from $L203$pdb import set_trace
 set_trace()
+
+    ''',
+
+    '''
+
+import pudb
+pudb.$L203$set_trace()
 
     ''',
 ]
