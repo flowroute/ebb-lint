@@ -44,7 +44,7 @@ def docstring_errors(purpose, docstring):
         return
     if raw_lines[0] != '"""':
         yield Errors.docstring_formatting_error, {
-            'parse_error': 'docstrings must start with """',
+            'parse_error': '''a docstring's first line must be just """''',
         }
     initial_indent = _docstring_leading_indent.match(raw_lines[1])
     indent = initial_indent.end(1)
