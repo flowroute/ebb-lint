@@ -7,7 +7,7 @@
 /build
 /wheelhouse
 /version.txt
-/ebb_devtools/_version.py
+/ebb_lint/_version.py
 
 # Ignore logs and egg files
 *.egg*

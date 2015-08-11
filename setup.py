@@ -21,18 +21,17 @@ extras_require['all'] = list({
 
 
 setup(
-    name='ebb-devtools',
+    name='ebb-lint',
     vcversioner={
-        'version_module_paths': ['ebb_devtools/_version.py'],
+        'version_module_paths': ['ebb_lint/_version.py'],
     },
-    description='tools for developing quality software',
+    description='lint for ensuring quality software',
     author='Flowroute Inc.',
     author_email='development@flowroute.com',
     packages=[
-        'ebb_devtools',
-        'ebb_devtools.lint',
-        'ebb_devtools.lint.checkers',
-        'ebb_devtools.lint.test',
+        'ebb_lint',
+        'ebb_lint.checkers',
+        'ebb_lint.test',
     ],
     install_requires=[
         'enum34',
@@ -43,7 +42,7 @@ setup(
     setup_requires=['vcversioner'],
     entry_points={
         'flake8.extension': [
-            'L = ebb_devtools.lint:EbbLint',
+            'L = ebb_lint:EbbLint',
         ],
     },
 )

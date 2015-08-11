@@ -1,7 +1,7 @@
 from lib2to3.pygram import python_symbols
 
-from ebb_devtools.lint.checkers.registration import register_checker
-from ebb_devtools.lint.errors import Errors
+from ebb_lint.checkers.registration import register_checker
+from ebb_lint.errors import Errors
 
 
 def last(seq):

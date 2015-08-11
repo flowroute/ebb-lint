@@ -6,8 +6,8 @@ from lib2to3 import patcomp, pygram, pytree
 
 import venusian
 
-from ebb_devtools._version import __version__
-from ebb_devtools.lint import checkers
+from ebb_lint._version import __version__
+from ebb_lint import checkers
 
 
 def find_comments(s):
@@ -35,7 +35,7 @@ class Lines(object):
 
 
 class EbbLint(object):
-    name = 'ebb_devtools lint'
+    name = 'ebb_lint'
     version = __version__
 
     _lines = None

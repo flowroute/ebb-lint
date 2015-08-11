@@ -3,8 +3,8 @@ import re
 
 import enum
 
-from ebb_devtools.lint.checkers.registration import register_checker
-from ebb_devtools.lint.errors import Errors
+from ebb_lint.checkers.registration import register_checker
+from ebb_lint.errors import Errors
 
 
 _single_line_docstring = re.compile(r'\A"""(\s*)(.*?)(\s*)"""\Z')

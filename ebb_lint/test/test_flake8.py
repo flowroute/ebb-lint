@@ -3,7 +3,7 @@ import re
 
 import pytest
 
-from ebb_devtools.lint.flake8 import EbbLint, Lines
+from ebb_lint.flake8 import EbbLint, Lines
 
 
 _code_pattern = re.compile(r"""
