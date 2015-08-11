@@ -99,24 +99,6 @@ class Spam(object):
 
     '''
 
-$L202$print 'hi'
-
-    ''',
-
-    '''
-
-$L202$print
-
-    ''',
-
-    '''
-
-$L202$print >> aether, 'hi'
-
-    ''',
-
-    '''
-
 import $L203$pdb
 pdb.$L203$set_trace()
 
@@ -143,6 +125,38 @@ pudb.$L203$set_trace()
 
     ''',
 ]
+
+
+contexts = [
+    ('# I sincerely swear that this is one-off code.', ''),
+
+    ("""
+# I sincerely swear that this is one-off code.
+# I sincerely swear that I am not a member of the Communist Party.
+
+class Something(object):
+    pass
+
+    """, ''),
+
+    ('', '$L202$'),
+]
+
+
+prints = [
+    "print 'hi'",
+    "print 'hi',",
+    "print >> aether, 'hi'",
+    "print",
+    "print('hi')",
+    "print()",
+]
+
+
+all_sources.extend('''
+{ctx[0]}
+{ctx[1]}{print_}
+'''.format(ctx=ctx, print_=print_) for ctx in contexts for print_ in prints)
 
 
 element_pairs = [

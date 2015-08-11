@@ -25,10 +25,34 @@ def check_for_set_trace(func):
 
 @register_checker("""
 
+f=file_input< any* >
+
+""", comments_for=['f'])
+def scan_top_level_comments(f, f_comments):
+    if '# I sincerely swear that this is one-off code.' in f_comments:
+        f.print_lint_ok = True
+    return []
+
+
+def scan_ancestry_for(node, attr, default):
+    not_set = object()
+    while node is not None:
+        value = getattr(node, attr, not_set)
+        if value is not not_set:
+            return value
+        node = node.parent
+    return default
+
+
+@register_checker("""
+
 ( simple_stmt< any* p='print' any* >
 | print_stmt< p='print' any* >
+| power< p='print' trailer< '(' any* ')' > any* >
 )
 
 """)
 def check_for_print(p):
+    if scan_ancestry_for(p, 'print_lint_ok', False):
+        return
     yield p, Errors.no_print, {}
