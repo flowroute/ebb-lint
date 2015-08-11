@@ -1,3 +1,4 @@
+import collections
 import re
 
 import enum
@@ -5,6 +6,8 @@ import enum
 from ebb_devtools.lint.checkers.registration import register_checker
 from ebb_devtools.lint.errors import Errors
 
+
+_single_line_docstring = re.compile(r'\A"""(\s*)(.*?)(\s*)"""\Z')
 
 _docstring_leading_indent = re.compile(r'^( *)(.*)$')
 
@@ -33,81 +36,126 @@ class DocstringPurpose(enum.Enum):
     other = 'other'
 
 
+class Line(collections.namedtuple('Line', ['pos', 'line'])):
+    def error(self, error, **extra):
+        extra.update(self.pos)
+        return error, extra
+
+
 def docstring_errors(purpose, docstring):
     raw_lines = docstring.splitlines()
-    if len(raw_lines) < 3:
+    if len(raw_lines) == 1:
+        m = _single_line_docstring.match(raw_lines[0])
+        if m is None:
+            yield Errors.docstring_formatting_error, {
+                'parse_error': (
+                    'single-line docstrings must still start and end with '
+                    '"""'),
+            }
+            return
+
+        if not m.group(2):
+            yield Errors.docstring_formatting_error, {
+                'parse_error': 'single-line docstrings must not be empty',
+            }
+            return
+        else:
+            if m.group(1):
+                yield Errors.docstring_formatting_error, {
+                    'parse_error': (
+                        'single-line docstrings must not start with '
+                        'whitespace'),
+                    'offset': m.start(1),
+                }
+            if m.group(3):
+                yield Errors.docstring_formatting_error, {
+                    'parse_error': (
+                        'single-line docstrings must not end with whitespace'),
+                    'offset': m.start(3),
+                }
+
+        lines = [
+            Line({'offset': m.start(2)}, m.group(2)),
+        ]
+
+    elif len(raw_lines) < 3:
         yield Errors.docstring_formatting_error, {
             'parse_error': (
                 'docstrings must have """, their text, and """ all on '
-                'separate lines'),
-        }
-        return
-    if raw_lines[0] != '"""':
-        yield Errors.docstring_formatting_error, {
-            'parse_error': '''a docstring's first line must be just """''',
-        }
-    initial_indent = _docstring_leading_indent.match(raw_lines[1])
-    indent = initial_indent.end(1)
-    if indent % 4 != 0:
-        yield Errors.docstring_formatting_error, {
-            'parse_error': 'docstring indentation must be a multiple of four',
-            'line_offset': 1,
-            'column': 0,
-        }
-    first_line = initial_indent.group(2)
-    if not first_line:
-        yield Errors.docstring_formatting_error, {
-            'parse_error': 'docstrings must have text on the first line',
-            'line_offset': 1,
-            'column': indent,
+                'separate lines, or all on the same line'),
         }
         return
 
-    indent_string = initial_indent.group(1)
-    lines = [first_line]
-    all_lines_good = True
-    for line_offset, raw_line in enumerate(raw_lines[2:], start=2):
-        if not raw_line:
-            lines.append(None)
-        elif raw_line.startswith(indent_string):
-            lines.append(raw_line[indent:])
-        else:
+    else:
+        if raw_lines[0] != '"""':
             yield Errors.docstring_formatting_error, {
                 'parse_error': (
-                    'every line of a docstring must have the same '
-                    'indentation'),
-                'line_offset': line_offset,
+                    "a multi-line docstring's first line must be just " '"""'),
+            }
+            return
+        initial_indent = _docstring_leading_indent.match(raw_lines[1])
+        indent = initial_indent.end(1)
+        if indent % 4 != 0:
+            yield Errors.docstring_formatting_error, {
+                'parse_error': (
+                    'docstring indentation must be a multiple of four'),
+                'line_offset': 1,
                 'column': 0,
             }
-            all_lines_good = False
-            lines.append(None)
-
-    if all_lines_good and lines[-1] != '"""':
-        yield Errors.docstring_formatting_error, {
-            'parse_error': 'docstrings must end with """',
-            'line_offset': len(raw_lines) - 1,
-            'column': indent,
-        }
-
-    if purpose == DocstringPurpose.test:
-        m = _bad_test_docstring_starts.match(lines[0])
-        if m is not None:
-            yield Errors.test_docstring_prefix, {
-                'prefix': m.group(),
+        first_line = initial_indent.group(2)
+        if not first_line:
+            yield Errors.docstring_formatting_error, {
+                'parse_error': (
+                    'multi-line docstrings must have text on the first line '
+                    'following the """'),
                 'line_offset': 1,
                 'column': indent,
             }
+            return
 
-    for line_offset, line in enumerate(lines, start=1):
-        if line is None:
-            continue
-        m = _sphinx_info_fields.match(line)
-        if m is not None:
-            yield Errors.use_napoleon_in_docstrings, {
-                'field': m.group(1),
-                'line_offset': line_offset,
+        indent_string = initial_indent.group(1)
+        lines = [first_line]
+        all_lines_good = True
+        for line_offset, raw_line in enumerate(raw_lines[2:], start=2):
+            if not raw_line:
+                lines.append(None)
+            elif raw_line.startswith(indent_string):
+                lines.append(raw_line[indent:])
+            else:
+                yield Errors.docstring_formatting_error, {
+                    'parse_error': (
+                        'every line of a docstring must have the same '
+                        'indentation'),
+                    'line_offset': line_offset,
+                    'column': 0,
+                }
+                all_lines_good = False
+                lines.append(None)
+
+        if all_lines_good and lines[-1] != '"""':
+            yield Errors.docstring_formatting_error, {
+                'parse_error': 'multi-line docstrings must end with """',
+                'line_offset': len(raw_lines) - 1,
                 'column': indent,
             }
+
+        lines = [
+            Line({'line_offset': line_offset, 'column': indent}, line)
+            for line_offset, line in enumerate(lines, start=1)]
+
+    if purpose == DocstringPurpose.test:
+        m = _bad_test_docstring_starts.match(lines[0].line)
+        if m is not None:
+            yield lines[0].error(
+                Errors.test_docstring_prefix, prefix=m.group())
+
+    for line in lines:
+        if line.line is None:
+            continue
+        m = _sphinx_info_fields.match(line.line)
+        if m is not None:
+            yield line.error(
+                Errors.use_napoleon_in_docstrings, field=m.group(1))
 
 
 @register_checker(r"""

@@ -40,9 +40,44 @@ all_sources = [
 def f():
     $L102$'''
     spam
-    $L102$'''
+    '''
 
     """,
+
+    """
+
+def f():
+    $L102$'''spam'''
+
+    """,
+
+    """
+
+def f():
+    $L102$'spam'
+
+    """,
+
+    """
+
+def f():
+    $L102$"spam"
+
+    """,
+
+    '''
+
+def f():
+    """$L102$ spam"""
+
+    ''',
+
+    '''
+
+def f():
+    """spam$L102$ """
+
+    ''',
 
     '''
 
@@ -365,6 +400,8 @@ $L102$   hey
     """
 $L102$   hey
    $L102$ """,
+
+    'hi',
 ]
 
 
@@ -403,8 +440,6 @@ hi""",
     """hi
     """,
 
-    'hi',
-
     '',
 ])
 
@@ -413,6 +448,8 @@ test_docstrings = [
     """
     $L103$Test that the thing does the thing.
     """,
+
+    '$L103$Test that the thing does the thing.',
 
     """
     $L103$VERIFY MY YELLING VOLUME
