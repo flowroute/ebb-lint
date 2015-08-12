@@ -31,14 +31,31 @@ if sys.version_info < (3, 4):
     install_requires.append('enum34')
 
 
+with open('README.rst') as infile:
+    long_description = infile.read()
+
+
 setup(
     name='ebb-lint',
     vcversioner={
         'version_module_paths': ['ebb_lint/_version.py'],
     },
     description='lint for ensuring quality software',
+    long_description=long_description,
     author='Flowroute Inc.',
     author_email='development@flowroute.com',
+    url='https://github.com/flowroute/ebb-lint',
+    classifiers=[
+        'Development Status :: 3 - Alpha',
+        'Environment :: Plugins',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Topic :: Software Development :: Quality Assurance',
+    ],
     license='MIT',
     packages=[
         'ebb_lint',
