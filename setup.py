@@ -39,6 +39,7 @@ setup(
     description='lint for ensuring quality software',
     author='Flowroute Inc.',
     author_email='development@flowroute.com',
+    license='MIT',
     packages=[
         'ebb_lint',
         'ebb_lint.checkers',
