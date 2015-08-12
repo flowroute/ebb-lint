@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from ebb_lint.checkers.registration import register_checker
 from ebb_lint.errors import Errors
 

@@ -1,9 +1,12 @@
+from __future__ import unicode_literals
+
 import bisect
 import io
 import tokenize
 from lib2to3.pgen2 import driver
 from lib2to3 import patcomp, pygram, pytree
 
+import six
 import venusian
 
 from ebb_lint._version import __version__
@@ -11,7 +14,7 @@ from ebb_lint import checkers
 
 
 def find_comments(s):
-    fobj = io.StringIO(unicode(s))
+    fobj = io.StringIO(six.text_type(s))
     for typ, tok, _, _, _ in tokenize.generate_tokens(fobj.readline):
         if typ == tokenize.COMMENT:
             yield tok

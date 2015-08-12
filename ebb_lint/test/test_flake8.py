@@ -1,9 +1,15 @@
+from __future__ import unicode_literals
+
 import ast
 import re
 
 import pytest
+import six
 
 from ebb_lint.flake8 import EbbLint, Lines
+
+
+py3skip = pytest.mark.skipif(six.PY3, reason='not runnable on python 3')
 
 
 _code_pattern = re.compile(r"""
@@ -133,30 +139,37 @@ contexts = [
     ("""
 # I sincerely swear that this is one-off code.
 # I sincerely swear that I am not a member of the Communist Party.
-
-class Something(object):
-    pass
-
     """, ''),
 
     ('', '$L202$'),
 ]
 
 
-prints = [
-    "print 'hi'",
-    "print 'hi',",
-    "print >> aether, 'hi'",
-    "print",
-    "print('hi')",
-    "print()",
-]
-
-
-all_sources.extend('''
+all_sources.extend(
+    py3skip('''
 {ctx[0]}
 {ctx[1]}{print_}
-'''.format(ctx=ctx, print_=print_) for ctx in contexts for print_ in prints)
+    '''.format(ctx=ctx, print_=print_))
+    for ctx in contexts
+    for print_ in [
+        "print 'hi'",
+        "print 'hi',",
+        "print >> aether, 'hi'",
+        "print",
+    ])
+
+
+all_sources.extend(
+    '''
+{ctx[0]}
+from __future__ import print_function
+{ctx[1]}{print_}
+    '''.format(ctx=ctx, print_=print_)
+    for ctx in contexts
+    for print_ in [
+        "print('hi')",
+        "print()",
+    ])
 
 
 element_pairs = [

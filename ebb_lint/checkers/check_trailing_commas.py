@@ -1,4 +1,8 @@
+from __future__ import unicode_literals
+
 from lib2to3.pygram import python_symbols
+
+from six.moves import reduce
 
 from ebb_lint.checkers.registration import register_checker
 from ebb_lint.errors import Errors
