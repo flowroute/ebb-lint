@@ -43,3 +43,6 @@ class Errors(enum.Enum):
         ('implicit string literal concatenation requires all string literals '
          'to be enclosed in parentheses containing nothing but string '
          'literals'))
+    no_definition_statements_in_dunder_init = Error(
+        205,
+        'do not define functions or classes in __init__.py')

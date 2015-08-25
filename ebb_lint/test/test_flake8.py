@@ -576,12 +576,46 @@ def test_f():
 '''.format(docstring) for docstring in test_docstrings)
 
 
-@pytest.mark.parametrize('source', all_sources)
-def test_linting(tmpdir, source):
+dunder_init_sources = [
+    '''
+
+$L205$def spam():
+    pass
+
+    ''',
+
+    '''
+
+$L205$class Spam():
+    pass
+
+    ''',
+
+    '''
+
+from spam import eggs
+
+__all__ = ['eggs']
+
+    ''',
+]
+
+
+all_filename_sources = [
+    ('__init__.py', source) for source in dunder_init_sources]
+
+
+@pytest.mark.parametrize(('filename', 'source'), all_filename_sources)
+def test_linting_with_filename(tmpdir, source, filename):
     source, error_locations = find_error_locations(source)
-    sourcefile = tmpdir.join('source.py')
+    sourcefile = tmpdir.join(filename)
     sourcefile.write(source)
     lint = EbbLint(ast.parse(source), sourcefile.strpath)
     actual = [
         (line, col, message[:4]) for line, col, message, _ in lint.run()]
     assert actual == error_locations
+
+
+@pytest.mark.parametrize('source', all_sources)
+def test_linting_with_default_filename(tmpdir, source):
+    return test_linting_with_filename(tmpdir, source, filename='source.py')

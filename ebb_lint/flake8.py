@@ -95,5 +95,7 @@ class EbbLint(object):
                 for k in extra.get('comments_for', ()):
                     comments = list(find_comments(node.prefix))
                     results[k + '_comments'] = comments
+                if extra.get('pass_filename', False):
+                    results['filename'] = self.filename
                 for error_node, error, kw in checker(**results):
                     yield self._message_for(error_node, error, **kw)
