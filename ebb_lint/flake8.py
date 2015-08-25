@@ -13,54 +13,61 @@ from ebb_lint._version import __version__
 from ebb_lint import checkers
 
 
-# Stolen from lib2to3 directly. Why was this a private function? Ugh.
-def detect_future_features(infile):
-    have_docstring = False
-    gen = tokenize.generate_tokens(infile.readline)
+# I tried to make this omit coverage on one or the other side of this branch
+# depending on whether we're testing py2 or py3, but that ended up being a
+# mess. Also, detect_future_features isn't fully covered, but I don't really
+# care, because I don't want to rewrite it. Maybe if it becomes more relevant
+# I'll pull it out of this suite and actually properly unit test it, but right
+# now I feel like it's mostly just working around a lib2to3 deficiency so I
+# don't care enough to do anything else.
 
-    def advance():
-        tok = next(gen)
-        return tok[0], tok[1]
-
-    ignore = frozenset((token.NEWLINE, tokenize.NL, token.COMMENT))
-    features = set()
-    try:
-        while True:
-            tp, value = advance()
-            if tp in ignore:
-                continue
-            elif tp == token.STRING:
-                if have_docstring:
-                    break
-                have_docstring = True
-            elif tp == token.NAME and value == 'from':
-                tp, value = advance()
-                if tp != token.NAME or value != '__future__':
-                    break
-                tp, value = advance()
-                if tp != token.NAME or value != 'import':
-                    break
-                tp, value = advance()
-                if tp == token.OP and value == '(':
-                    tp, value = advance()
-                while tp == token.NAME:
-                    features.add(value)
-                    tp, value = advance()
-                    if tp != token.OP or value != ',':
-                        break
-                    tp, value = advance()
-            else:
-                break
-    except StopIteration:
-        pass
-    return frozenset(features)
-
-
-if six.PY3:
+if six.PY3:  # pragma: nocover
     def grammar_for_filename(filename):
         return pygram.python_grammar_no_print_statement
 
-else:
+else:  # pragma: nocover
+    # Stolen from lib2to3 directly. Why was this a private function? Ugh.
+    def detect_future_features(infile):
+        have_docstring = False
+        gen = tokenize.generate_tokens(infile.readline)
+
+        def advance():
+            tok = next(gen)
+            return tok[0], tok[1]
+
+        ignore = frozenset((token.NEWLINE, tokenize.NL, token.COMMENT))
+        features = set()
+        try:
+            while True:
+                tp, value = advance()
+                if tp in ignore:
+                    continue
+                elif tp == token.STRING:
+                    if have_docstring:
+                        break
+                    have_docstring = True
+                elif tp == token.NAME and value == 'from':
+                    tp, value = advance()
+                    if tp != token.NAME or value != '__future__':
+                        break
+                    tp, value = advance()
+                    if tp != token.NAME or value != 'import':
+                        break
+                    tp, value = advance()
+                    if tp == token.OP and value == '(':
+                        tp, value = advance()
+                    while tp == token.NAME:
+                        features.add(value)
+                        tp, value = advance()
+                        if tp != token.OP or value != ',':
+                            break
+                        tp, value = advance()
+                else:
+                    break
+        except StopIteration:
+            pass
+        return frozenset(features)
+
     def grammar_for_filename(filename):
         with open(filename, 'r') as infile:
             future_features = detect_future_features(infile)

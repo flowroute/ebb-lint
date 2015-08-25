@@ -62,6 +62,11 @@ def check_for_print(p):
     yield p, Errors.no_print, {}
 
 
+# XXX: There's a bit of uncovered code below, but it's really just because I'm
+# coding defensively. I don't know if it's possible to get lib2to3 to emit an
+# AST that's in this particular shape, but I don't want to get caught offguard
+# if it is. Maybe at some point I'll turn these into asserts or something?
+
 class NoParentheizedGroup(Exception):
     pass
 
