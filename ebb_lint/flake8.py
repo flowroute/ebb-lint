@@ -56,13 +56,18 @@ def detect_future_features(infile):
     return frozenset(features)
 
 
-def grammar_for_filename(filename):
-    with open(filename, 'rb') as infile:
-        future_features = detect_future_features(infile)
-    if 'print_function' in future_features:
+if six.PY3:
+    def grammar_for_filename(filename):
         return pygram.python_grammar_no_print_statement
-    else:
-        return pygram.python_grammar
+
+else:
+    def grammar_for_filename(filename):
+        with open(filename, 'r') as infile:
+            future_features = detect_future_features(infile)
+        if 'print_function' in future_features:
+            return pygram.python_grammar_no_print_statement
+        else:
+            return pygram.python_grammar
 
 
 def find_comments(s):
