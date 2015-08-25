@@ -1,8 +1,8 @@
 *** TODO [4/9]
- - [ ] check for excess stuff in __init__.py
-   - [ ] no functions
-   - [ ] no classes
-   - [ ] nothing but imports and __all__
+ - [-] check for excess stuff in __init__.py
+   - [X] no functions
+   - [X] no classes
+   - [ ] nothing but imports and __all__ (needs discussion; might not be desired)
  - [X] enforce trailing commas
  - [X] enforce parens around implicit string literal concatentation
  - [ ] no implicit relative imports
