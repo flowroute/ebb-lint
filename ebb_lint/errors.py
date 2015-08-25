@@ -38,3 +38,7 @@ class Errors(enum.Enum):
         203,
         'debuggers are only allowed while debugging; make sure to remove this '
         'before committing')
+    no_unintentional_implicit_concatenation = Error(
+        204,
+        'implicit string literal concatenation requires all string literals '
+        'to be enclosed in parentheses containing nothing but string literals')
