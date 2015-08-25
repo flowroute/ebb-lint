@@ -19,7 +19,7 @@ def detect_future_features(infile):
     gen = tokenize.generate_tokens(infile.readline)
 
     def advance():
-        tok = gen.next()
+        tok = next(gen)
         return tok[0], tok[1]
 
     ignore = frozenset((token.NEWLINE, tokenize.NL, token.COMMENT))
