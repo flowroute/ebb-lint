@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 import bisect
 import io
 import tokenize
-from lib2to3.pgen2 import driver
+from lib2to3.pgen2 import driver, token
 from lib2to3 import patcomp, pygram, pytree
 
 import six
@@ -11,6 +11,58 @@ import venusian
 
 from ebb_lint._version import __version__
 from ebb_lint import checkers
+
+
+# Stolen from lib2to3 directly. Why was this a private function? Ugh.
+def detect_future_features(infile):
+    have_docstring = False
+    gen = tokenize.generate_tokens(infile.readline)
+
+    def advance():
+        tok = gen.next()
+        return tok[0], tok[1]
+
+    ignore = frozenset((token.NEWLINE, tokenize.NL, token.COMMENT))
+    features = set()
+    try:
+        while True:
+            tp, value = advance()
+            if tp in ignore:
+                continue
+            elif tp == token.STRING:
+                if have_docstring:
+                    break
+                have_docstring = True
+            elif tp == token.NAME and value == 'from':
+                tp, value = advance()
+                if tp != token.NAME or value != '__future__':
+                    break
+                tp, value = advance()
+                if tp != token.NAME or value != 'import':
+                    break
+                tp, value = advance()
+                if tp == token.OP and value == '(':
+                    tp, value = advance()
+                while tp == token.NAME:
+                    features.add(value)
+                    tp, value = advance()
+                    if tp != token.OP or value != ',':
+                        break
+                    tp, value = advance()
+            else:
+                break
+    except StopIteration:
+        pass
+    return frozenset(features)
+
+
+def grammar_for_filename(filename):
+    with open(filename, 'rb') as infile:
+        future_features = detect_future_features(infile)
+    if 'print_function' in future_features:
+        return pygram.python_grammar_no_print_statement
+    else:
+        return pygram.python_grammar
 
 
 def find_comments(s):
@@ -85,7 +137,7 @@ class EbbLint(object):
 
     def run(self):
         d = driver.Driver(
-            pygram.python_grammar, convert=pytree.convert)
+            grammar_for_filename(self.filename), convert=pytree.convert)
         tree = d.parse_file(self.filename)
         for node in tree.pre_order():
             for pattern, checker, extra in self.collected_checkers:

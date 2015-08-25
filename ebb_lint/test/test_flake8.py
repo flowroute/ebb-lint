@@ -202,6 +202,25 @@ x = [
 x = ('a' 'b')
 
     ''',
+
+    '''
+
+from __future__ import print_function
+import sys
+
+$L202$print("Yay!", file=sys.stdout)
+
+    ''',
+
+    '''
+
+# I sincerely swear that this is one-off code.
+from __future__ import print_function
+import sys
+
+print("Yay!", file=sys.stdout)
+
+    ''',
 ]
 
 
