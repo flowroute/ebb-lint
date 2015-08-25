@@ -46,3 +46,6 @@ class Errors(enum.Enum):
     no_definition_statements_in_dunder_init = Error(
         205,
         'do not define functions or classes in __init__.py')
+    no_implicit_relative_imports = Error(
+        206,
+        'do not use implicit relative imports')

@@ -624,17 +624,113 @@ all_filename_sources = [
     ('__init__.py', source) for source in dunder_init_sources]
 
 
+@pytest.fixture
+def assert_lint():
+    def check(source, sourcefile):
+        source, error_locations = find_error_locations(source)
+        sourcefile.write(source)
+        lint = EbbLint(ast.parse(source), sourcefile.strpath)
+        actual = [
+            (line, col, message[:4]) for line, col, message, _ in lint.run()]
+        assert actual == error_locations
+
+    return check
+
+
 @pytest.mark.parametrize(('filename', 'source'), all_filename_sources)
-def test_linting_with_filename(tmpdir, source, filename):
-    source, error_locations = find_error_locations(source)
+def test_linting_with_filename(assert_lint, tmpdir, source, filename):
     sourcefile = tmpdir.join(filename)
-    sourcefile.write(source)
-    lint = EbbLint(ast.parse(source), sourcefile.strpath)
-    actual = [
-        (line, col, message[:4]) for line, col, message, _ in lint.run()]
-    assert actual == error_locations
+    assert_lint(source, sourcefile)
 
 
 @pytest.mark.parametrize('source', all_sources)
-def test_linting_with_default_filename(tmpdir, source):
-    return test_linting_with_filename(tmpdir, source, filename='source.py')
+def test_linting_with_default_filename(assert_lint, tmpdir, source):
+    sourcefile = tmpdir.join('source.py')
+    assert_lint(source, sourcefile)
+
+
+implicit_relative_import_sources = [
+    {
+        'spam.py': '''
+
+import $L206$eggs
+
+        ''',
+
+        'eggs.py': '''
+
+import $L206$spam
+
+        ''',
+    },
+
+    {
+        'spam.py': '''
+
+import eggs
+
+        ''',
+    },
+
+    {
+        'spam.py': '''
+
+import $L206$eggs.eggs
+
+        ''',
+
+        'eggs/__init__.py': '',
+        'eggs/eggs.py': '',
+    },
+
+    {
+        'spam.py': '''
+
+import eggs.eggs
+
+        ''',
+    },
+]
+
+
+implicit_relative_import_sources.extend(
+    {
+        'spam.py': '''
+
+import $L206$eggs
+
+        ''',
+
+        'eggs.{}'.format(ext): '',
+    }
+    for ext in ['py', 'pyc', 'pyo', 'pyd', 'so']
+)
+
+
+implicit_relative_import_sources.extend(
+    {
+        'spam.py': '''
+
+import $L206$eggs
+
+        ''',
+
+        'eggs/__init__.{}'.format(ext): '',
+    }
+    for ext in ['py', 'pyc', 'pyo']
+)
+
+
+all_implicit_relative_import_sources = [
+    (name, sources)
+    for sources in implicit_relative_import_sources
+    for name in sources]
+
+
+@pytest.mark.parametrize(
+    ('to_test', 'sources'), all_implicit_relative_import_sources)
+def test_linting_implicit_relative_imports(
+        assert_lint, tmpdir, to_test, sources):
+    for name, source in sources.items():
+        tmpdir.join(name).write(source, ensure=True)
+    assert_lint(sources[to_test], tmpdir.join(to_test))
