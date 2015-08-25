@@ -13,8 +13,8 @@ class Errors(enum.Enum):
         100, 'docstring-related errors')
     no_docstring_on_init = Error(
         101,
-        "__init__ doesn't need a docstring; standard sphinx convention is to "
-        "use the class-level docstring instead.")
+        ("__init__ doesn't need a docstring; standard sphinx convention is to "
+         "use the class-level docstring instead."))
     docstring_formatting_error = Error(
         102,
         'tried to validate the docstring: {parse_error}')
@@ -29,16 +29,17 @@ class Errors(enum.Enum):
         200, 'errors related to dubious syntax')
     no_trailing_comma_in_literal = Error(
         201,
-        'container literals must have a trailing comma following the last '
-        'element')
+        ('container literals must have a trailing comma following the last '
+         'element'))
     no_print = Error(
         202,
         'print is only allowed while debugging; use logging in real code')
     no_debuggers = Error(
         203,
-        'debuggers are only allowed while debugging; make sure to remove this '
-        'before committing')
+        ('debuggers are only allowed while debugging; make sure to remove '
+         'this before committing'))
     no_unintentional_implicit_concatenation = Error(
         204,
-        'implicit string literal concatenation requires all string literals '
-        'to be enclosed in parentheses containing nothing but string literals')
+        ('implicit string literal concatenation requires all string literals '
+         'to be enclosed in parentheses containing nothing but string '
+         'literals'))
