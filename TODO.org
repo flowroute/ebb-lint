@@ -1,11 +1,11 @@
-*** TODO [4/9]
+*** TODO [5/9]
  - [-] check for excess stuff in __init__.py
    - [X] no functions
    - [X] no classes
    - [ ] nothing but imports and __all__ (needs discussion; might not be desired)
  - [X] enforce trailing commas
  - [X] enforce parens around implicit string literal concatentation
- - [ ] no implicit relative imports
+ - [X] no implicit relative imports
  - [ ] enforce isort (does isort have an API?)
  - [X] see if anything can be done about determining where in a docstring errors are
  - [ ] determine what to do about string formatting
