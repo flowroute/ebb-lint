@@ -114,7 +114,7 @@ class NoParentheizedGroup(Exception):
 
 
 def parenthesized_group_leaves(container):
-    if container is None or not container.children:
+    if container is None or not container.children:  # pragma: nocover
         raise NoParentheizedGroup()
     first_child = container.children[0]
     last_child = container.children[-1]
@@ -135,7 +135,7 @@ atom=atom< first_string=STRING STRING+ >
 def check_for_unintentional_implicit_concatenation(atom, first_string):
     try:
         for child in parenthesized_group_leaves(atom.parent):
-            if child.type != token.STRING:
+            if child.type != token.STRING:  # pragma: nocover
                 break
         else:
             # all leaves were string literals
