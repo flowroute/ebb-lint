@@ -226,6 +226,13 @@ print("Yay!", file=sys.stdout)
 
 def f():
     pass''',
+
+    '''
+
+# coding: utf-8
+x = '\ufffd' + $L204$'\ufffe' '\uffff'
+
+    ''',
 ]
 
 
@@ -633,7 +640,7 @@ all_filename_sources = [
 def assert_lint():
     def check(source, sourcefile):
         source, error_locations = find_error_locations(source)
-        sourcefile.write(source)
+        sourcefile.write_text(source, encoding='utf-8')
         lint = EbbLint(ast.parse(source), sourcefile.strpath)
         actual = [
             (line, col, message[:4]) for line, col, message, _ in lint.run()]
@@ -737,5 +744,5 @@ all_implicit_relative_import_sources = [
 def test_linting_implicit_relative_imports(
         assert_lint, tmpdir, to_test, sources):
     for name, source in sources.items():
-        tmpdir.join(name).write(source, ensure=True)
+        tmpdir.join(name).write_text(source, encoding='utf-8', ensure=True)
     assert_lint(sources[to_test], tmpdir.join(to_test))
