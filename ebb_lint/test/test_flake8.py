@@ -221,6 +221,11 @@ import sys
 print("Yay!", file=sys.stdout)
 
     ''',
+
+    '''
+
+def f():
+    pass''',
 ]
 
 

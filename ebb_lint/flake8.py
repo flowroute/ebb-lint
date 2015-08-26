@@ -2,8 +2,7 @@ from __future__ import unicode_literals
 
 import bisect
 import io
-import tokenize
-from lib2to3.pgen2 import driver, token
+from lib2to3.pgen2 import driver, token, tokenize
 from lib2to3 import patcomp, pygram, pytree
 
 import six
@@ -84,6 +83,17 @@ def find_comments(s):
             yield tok
 
 
+def parse_file(driver, filename):
+    with open(filename, 'rb') as infile:
+        encoding = tokenize.detect_encoding(infile.readline)[0]
+    with io.open(filename, 'r', encoding=encoding) as infile:
+        source = infile.read()
+    # Thanks for this, lib2to3.
+    if not source.endswith('\n'):
+        source += '\n'
+    return driver.parse_string(source)
+
+
 class Lines(object):
     def __init__(self, infile):
         count = 0
@@ -150,7 +160,7 @@ class EbbLint(object):
     def run(self):
         d = driver.Driver(
             grammar_for_filename(self.filename), convert=pytree.convert)
-        tree = d.parse_file(self.filename)
+        tree = parse_file(d, self.filename)
         for node in tree.pre_order():
             for pattern, checker, extra in self.collected_checkers:
                 results = {}
