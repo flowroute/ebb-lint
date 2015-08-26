@@ -9,6 +9,7 @@ import six
 import venusian
 
 from ebb_lint._version import __version__
+from ebb_lint.errors import Errors
 from ebb_lint import checkers
 
 
@@ -88,10 +89,11 @@ def parse_file(driver, filename):
         encoding = tokenize.detect_encoding(infile.readline)[0]
     with io.open(filename, 'r', encoding=encoding) as infile:
         source = infile.read()
+    trailing_newline = source.endswith('\n')
     # Thanks for this, lib2to3.
-    if not source.endswith('\n'):
+    if not trailing_newline:
         source += '\n'
-    return driver.parse_string(source)
+    return driver.parse_string(source), trailing_newline
 
 
 class Lines(object):
@@ -101,6 +103,7 @@ class Lines(object):
         for line in infile:
             self.lines.append((count, line))
             count += len(line)
+        self.last_pos = len(self.lines) - 1, len(self.lines[-1][1])
 
     def __getitem__(self, idx):
         return self.lines[idx]
@@ -144,7 +147,7 @@ class EbbLint(object):
                 self._lines = Lines(infile)
         return self._lines
 
-    def _message_for(self, node, error, **kw):
+    def _message_for_node(self, node, error, **kw):
         line_offset = kw.pop('line_offset', None)
         if line_offset is None:
             byte, _ = self.lines[node.lineno]
@@ -153,6 +156,10 @@ class EbbLint(object):
         else:
             lineno = node.lineno + line_offset
             column = kw.pop('column')
+        return self._message_for_pos((lineno, column), error, **kw)
+
+    def _message_for_pos(self, pos, error, **kw):
+        lineno, column = pos
         message = 'L{:03d} {}'.format(
             error.value.code, error.value.message.format(**kw))
         return lineno, column, message, type(self)
@@ -160,7 +167,10 @@ class EbbLint(object):
     def run(self):
         d = driver.Driver(
             grammar_for_filename(self.filename), convert=pytree.convert)
-        tree = parse_file(d, self.filename)
+        tree, trailing_newline = parse_file(d, self.filename)
+        if not trailing_newline:
+            yield self._message_for_pos(
+                self.lines.last_pos, Errors.no_trailing_newline)
         for node in tree.pre_order():
             for pattern, checker, extra in self.collected_checkers:
                 results = {}
@@ -172,4 +182,4 @@ class EbbLint(object):
                 if extra.get('pass_filename', False):
                     results['filename'] = self.filename
                 for error_node, error, kw in checker(**results):
-                    yield self._message_for(error_node, error, **kw)
+                    yield self._message_for_node(error_node, error, **kw)

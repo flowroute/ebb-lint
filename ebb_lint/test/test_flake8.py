@@ -225,7 +225,7 @@ print("Yay!", file=sys.stdout)
     '''
 
 def f():
-    pass''',
+    pass$L301$''',
 
     '''
 
@@ -639,6 +639,10 @@ all_filename_sources = [
 @pytest.fixture
 def assert_lint():
     def check(source, sourcefile):
+        # Strip trailing spaces, since the most comfortable triple-quoted
+        # string format will have extra spaces on the last line. If this isn't
+        # removed, it'll throw off the trailing newline checker.
+        source = source.rstrip(' ')
         source, error_locations = find_error_locations(source)
         sourcefile.write_text(source, encoding='utf-8')
         lint = EbbLint(ast.parse(source), sourcefile.strpath)
@@ -691,8 +695,8 @@ import $L206$eggs.eggs
 
         ''',
 
-        'eggs/__init__.py': '',
-        'eggs/eggs.py': '',
+        'eggs/__init__.py': '\n',
+        'eggs/eggs.py': '\n',
     },
 
     {
@@ -713,7 +717,7 @@ import $L206$eggs
 
         ''',
 
-        'eggs.{}'.format(ext): '',
+        'eggs.{}'.format(ext): '\n',
     }
     for ext in ['py', 'pyc', 'pyo', 'pyd', 'so']
 )
@@ -727,7 +731,7 @@ import $L206$eggs
 
         ''',
 
-        'eggs/__init__.{}'.format(ext): '',
+        'eggs/__init__.{}'.format(ext): '\n',
     }
     for ext in ['py', 'pyc', 'pyo']
 )

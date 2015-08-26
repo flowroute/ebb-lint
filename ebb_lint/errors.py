@@ -49,3 +49,9 @@ class Errors(enum.Enum):
     no_implicit_relative_imports = Error(
         206,
         'do not use implicit relative imports')
+
+    whitespace_category = Error(
+        300, 'errors related to whitespace')
+    no_trailing_newline = Error(
+        301,
+        'files must end with a trailing newline')
