@@ -91,6 +91,19 @@ def check_for_implicit_relative_imports(filename, mod):
     yield node, Errors.no_implicit_relative_imports, {}
 
 
+@register_checker("""
+
+( classdef< which='class' any* >
+| funcdef< which='def' any* >
+)
+
+""", pass_filename=True)
+def check_disallowed_dunder_init_statements(filename, which):
+    if os.path.basename(filename) != '__init__.py':
+        return
+    yield which, Errors.no_definition_statements_in_dunder_init, {}
+
+
 # XXX: There's a bit of uncovered code below, but it's really just because I'm
 # coding defensively. I don't know if it's possible to get lib2to3 to emit an
 # AST that's in this particular shape, but I don't want to get caught offguard
