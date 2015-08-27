@@ -131,6 +131,35 @@ L205
 L206
   `Implicit relative imports`_ are not allowed.
 
+L207
+  ``pass`` is only necessary in non-optional suites containing no other statements.
+  If a suite contains another statement,
+  adding ``pass`` is redundant.
+  Docstrings count as a statement.
+
+  Non-optional suites are the suites of,
+  for example,
+  ``def``,
+  ``class``,
+  and ``if``.
+  ``else`` and ``finally`` suites are optional,
+  and as such this is never necessary::
+
+    if predicate():
+        do_something()
+    else:
+        pass
+
+    try:
+        do_something()
+    finally:
+        pass
+
+L208
+  `Pokémon exception handling <http://c2.com/cgi/wiki?PokemonExceptionHandling>`_ is always a mistake.
+  If you really intend to catch and ignore exceptions,
+  explicitly name *which* exception types you wish to silence.
+
 
 L3: Whitespace
 --------------

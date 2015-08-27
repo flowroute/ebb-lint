@@ -233,6 +233,115 @@ def f():
 x = '\ufffd' + $L204$'\ufffe' '\uffff'
 
     ''',
+
+    '''
+
+def f():
+    """
+    Spam; eggs.
+    """
+    $L207$pass
+
+    ''',
+
+    '''
+
+if True:
+    pass
+else:
+    $L207$pass
+
+    ''',
+
+    '''
+
+for x in y:
+    pass
+else:
+    $L207$pass
+
+    ''',
+
+    '''
+
+while True:
+    pass
+else:
+    $L207$pass
+
+    ''',
+
+    '''
+
+try:
+    pass
+finally:
+    $L207$pass
+
+    ''',
+
+    '''
+
+try:
+    pass
+except Whatever:
+    do_something()
+    $L207$pass
+
+    ''',
+
+    '''
+
+try:
+    pass
+except:
+    $L208$pass
+
+    ''',
+
+    '''
+
+try:
+    pass
+except Whatever:
+    pass
+
+    ''',
+
+    '''
+
+try:
+    pass
+except Whatever:
+    pass
+except:
+    $L208$pass
+
+    ''',
+
+    '''
+
+try:
+    pass
+except:
+    $L208$pass
+except Whatever:
+    pass
+
+    ''',
+
+    '''
+
+try:
+    pass
+except:
+    $L208$pass
+else:
+    do_something()
+finally:
+    do_something_else()
+
+    ''',
 ]
 
 

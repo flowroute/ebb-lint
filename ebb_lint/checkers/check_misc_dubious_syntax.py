@@ -104,6 +104,35 @@ def check_disallowed_dunder_init_statements(filename, which):
     yield which, Errors.no_definition_statements_in_dunder_init, {}
 
 
+@register_checker("""
+
+( suite< any* simple_stmt any* simple_stmt< p='pass' any > any* >
+| if_stmt< 'if' any+ 'else' ':'
+           suite< any* simple_stmt< p='pass' any > any* > >
+| for_stmt< 'for' any+ 'else' ':'
+            suite< any* simple_stmt< p='pass' any > any* > >
+| while_stmt< 'while' any+ 'else' ':'
+              suite< any* simple_stmt< p='pass' any > any* > >
+| try_stmt< 'try' any+ 'finally' ':'
+            suite< any* simple_stmt< p='pass' any > any* > >
+)
+
+""")
+def check_useless_pass(p):
+    yield p, Errors.useless_pass, {}
+
+
+@register_checker("""
+
+try_stmt< 'try' any+ 'except' ':'
+          suite< any* simple_stmt< p='pass' any > any* >
+          any* >
+
+""")
+def check_except_pass(p):
+    yield p, Errors.no_except_pass, {}
+
+
 # XXX: There's a bit of uncovered code below, but it's really just because I'm
 # coding defensively. I don't know if it's possible to get lib2to3 to emit an
 # AST that's in this particular shape, but I don't want to get caught offguard

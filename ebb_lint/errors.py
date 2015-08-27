@@ -49,6 +49,13 @@ class Errors(enum.Enum):
     no_implicit_relative_imports = Error(
         206,
         'do not use implicit relative imports')
+    useless_pass = Error(
+        207,
+        ("'pass' is only necessary in non-optional suites containing no other "
+         "statements"))
+    no_except_pass = Error(
+        208,
+        'be more specific about which exception types to silence')
 
     whitespace_category = Error(
         300, 'errors related to whitespace')
