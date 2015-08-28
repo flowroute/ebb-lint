@@ -41,6 +41,8 @@ def scan_for_checkers():
 
 
 all_sources = [
+    '',
+
     """
 
 def f():
@@ -804,8 +806,8 @@ import $L206$eggs.eggs
 
         ''',
 
-        'eggs/__init__.py': '\n',
-        'eggs/eggs.py': '\n',
+        'eggs/__init__.py': '',
+        'eggs/eggs.py': '',
     },
 
     {
@@ -826,7 +828,7 @@ import $L206$eggs
 
         ''',
 
-        'eggs.{}'.format(ext): '\n',
+        'eggs.{}'.format(ext): '',
     }
     for ext in ['py', 'pyc', 'pyo', 'pyd', 'so']
 )
@@ -840,7 +842,7 @@ import $L206$eggs
 
         ''',
 
-        'eggs/__init__.{}'.format(ext): '\n',
+        'eggs/__init__.{}'.format(ext): '',
     }
     for ext in ['py', 'pyc', 'pyo']
 )

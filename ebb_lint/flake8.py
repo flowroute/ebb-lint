@@ -89,7 +89,7 @@ def parse_file(driver, filename):
         encoding = tokenize.detect_encoding(infile.readline)[0]
     with io.open(filename, 'r', encoding=encoding) as infile:
         source = infile.read()
-    trailing_newline = source.endswith('\n')
+    trailing_newline = not source or source.endswith('\n')
     # Thanks for this, lib2to3.
     if not trailing_newline:
         source += '\n'
