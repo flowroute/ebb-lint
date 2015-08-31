@@ -1,4 +1,4 @@
-*** TODO [6/9]
+*** TODO [6/12]
  - [X] check for excess stuff in __init__.py
    - [X] no functions
    - [X] no classes
@@ -13,3 +13,6 @@
    - [ ] how many positional before requiring names?
  - [ ] check for redundant words ('function', 'class') in docstrings
  - [X] disallow print and pdb imports
+ - [ ] disallow map/filter+lambda
+ - [ ] check for 'def' where 'class' is intended
+ - [ ] no list comps for side effects
