@@ -29,7 +29,7 @@ _sphinx_info_fields = re.compile(r"""
      |r(?:aises?|eturns?|type)
      |type
      |var(?:type)?
-     )[ ]
+     )[: ]
 """)
 
 

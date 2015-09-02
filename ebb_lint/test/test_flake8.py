@@ -646,13 +646,21 @@ $L102$   hey
 ]
 
 
-docstrings.extend("""
-    $L104$:{} spam: eggs
-    """.format(field) for field in [
+sphinx_fields = [
     'param', 'parameter', 'arg', 'argument', 'key', 'keyword', 'type',
     'raises', 'raise', 'except', 'exception', 'var', 'ivar', 'cvar',
     'vartype', 'returns', 'return', 'rtype',
-])
+]
+
+
+docstrings.extend("""
+    $L104$:{} spam: eggs
+    """.format(field) for field in sphinx_fields)
+
+
+docstrings.extend("""
+    $L104$:{}: spam
+    """.format(field) for field in sphinx_fields)
 
 
 all_sources.extend('''
