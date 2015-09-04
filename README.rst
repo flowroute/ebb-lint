@@ -160,6 +160,28 @@ L208
   If you really intend to catch and ignore exceptions,
   explicitly name *which* exception types you wish to silence.
 
+L209
+  ``return``,
+  ``del``,
+  ``raise``,
+  ``assert``,
+  ``yield``,
+  and ``yield from``
+  are statements,
+  not functions,
+  and as such,
+  do not require parentheses.
+
+  This is okay::
+
+    return (
+      a
+      + b)
+
+  And this is not::
+
+    return(a + b)
+
 
 L3: Whitespace
 --------------

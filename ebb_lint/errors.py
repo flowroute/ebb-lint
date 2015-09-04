@@ -56,6 +56,9 @@ class Errors(enum.Enum):
     no_except_pass = Error(
         208,
         'be more specific about which exception types to silence')
+    useless_parens = Error(
+        209,
+        '{stmt} is not a function; parentheses are not required')
 
     whitespace_category = Error(
         300, 'errors related to whitespace')

@@ -133,6 +133,25 @@ def check_except_pass(p):
     yield p, Errors.no_except_pass, {}
 
 
+@register_checker("""
+
+( return_stmt< stmt='return' atom< lparen='(' any* ')' > >
+| del_stmt< stmt='del' atom< lparen='(' any* ')' > >
+| raise_stmt< stmt='raise' atom< lparen='(' any* ')' > >
+| assert_stmt< stmt='assert' atom< lparen='(' any* ')' > >
+| yield_expr< stmt='yield' atom< lparen='(' any* ')' > >
+| yield_expr< stmt='yield'
+              yield_arg< stmt2='from' atom< lparen='(' any* ')' > > >
+)
+
+""")
+def check_useless_parens(stmt, lparen, stmt2=None):
+    if lparen.prefix:
+        return
+    stmt_name = ' '.join(s.value for s in [stmt, stmt2] if s is not None)
+    yield stmt, Errors.useless_parens, {'stmt': stmt_name}
+
+
 # XXX: There's a bit of uncovered code below, but it's really just because I'm
 # coding defensively. I don't know if it's possible to get lib2to3 to emit an
 # AST that's in this particular shape, but I don't want to get caught offguard

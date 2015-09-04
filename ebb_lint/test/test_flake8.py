@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 import ast
 import re
+import sys
 
 import pytest
 import six
@@ -10,6 +11,8 @@ from ebb_lint.flake8 import EbbLint, Lines
 
 
 py3skip = pytest.mark.skipif(six.PY3, reason='not runnable on python 3')
+pre_py34skip = pytest.mark.skipif(
+    sys.version_info < (3, 4), reason='not runnable before python 3.4')
 
 
 _code_pattern = re.compile(r"""
@@ -569,6 +572,67 @@ spam = {{{elem[0][0]}: {elem[0][1]}, {elem[1][0]}: {elem[1][1]}}}
 
         ''',
     ])
+
+
+no_paren_statements = ['del', 'assert', 'return', 'raise', 'yield']
+
+
+all_sources.extend(
+    template.format(stmt=stmt)
+    for stmt in no_paren_statements
+    for template in [
+        '''
+
+$L209${stmt}(a)
+
+        ''',
+
+        '''
+
+{stmt} (a)
+
+        ''',
+    ])
+
+all_sources.extend([
+    '''
+
+a = $L209$yield(b)
+
+    ''',
+
+    '''
+
+a = yield (b)
+
+    ''',
+])
+
+all_sources.extend(pre_py34skip(s) for s in [
+    '''
+
+a = $L209$yield from(b)
+
+    ''',
+
+    '''
+
+a = yield from (b)
+
+    ''',
+
+    '''
+
+$L209$yield from(b)
+
+    ''',
+
+    '''
+
+yield from (b)
+
+    ''',
+])
 
 
 docstrings = [
