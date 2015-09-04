@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 import bisect
 import io
+import sys
 from lib2to3.pgen2 import driver, token, tokenize
 from lib2to3 import patcomp, pygram, pytree
 
@@ -133,6 +134,9 @@ class EbbLint(object):
         collected_checkers = []
 
         def register_checker(pattern, checker, extra):
+            if ('python_minimum_version' in extra
+                    and sys.version_info < extra['python_minimum_version']):
+                return
             pattern = patcomp.compile_pattern(pattern)
             collected_checkers.append((pattern, checker, extra))
 

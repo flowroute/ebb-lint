@@ -140,16 +140,24 @@ def check_except_pass(p):
 | raise_stmt< stmt='raise' atom< lparen='(' any* ')' > >
 | assert_stmt< stmt='assert' atom< lparen='(' any* ')' > >
 | yield_expr< stmt='yield' atom< lparen='(' any* ')' > >
-| yield_expr< stmt='yield'
-              yield_arg< stmt2='from' atom< lparen='(' any* ')' > > >
 )
 
 """)
-def check_useless_parens(stmt, lparen, stmt2=None):
+def check_useless_parens(stmt, lparen):
     if lparen.prefix:
         return
-    stmt_name = ' '.join(s.value for s in [stmt, stmt2] if s is not None)
-    yield stmt, Errors.useless_parens, {'stmt': stmt_name}
+    yield stmt, Errors.useless_parens, {'stmt': stmt.value}
+
+
+@register_checker("""
+
+yield_expr< stmt='yield' yield_arg< 'from' atom< lparen='(' any* ')' > > >
+
+""", python_minimum_version=(3, 4))
+def check_useless_parens_on_yield_from(stmt, lparen):
+    if lparen.prefix:
+        return
+    yield stmt, Errors.useless_parens, {'stmt': 'yield from'}
 
 
 # XXX: There's a bit of uncovered code below, but it's really just because I'm
