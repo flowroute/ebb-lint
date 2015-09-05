@@ -1,4 +1,4 @@
-*** TODO [6/13]
+*** TODO [8/13]
  - [X] check for excess stuff in __init__.py
    - [X] no functions
    - [X] no classes
@@ -15,5 +15,5 @@
  - [X] disallow print and pdb imports
  - [ ] disallow map/filter+lambda
  - [ ] check for 'def' where 'class' is intended
- - [ ] no list comps for side effects
- - [ ] del/return are not functions
+ - [X] no list comps for side effects
+ - [X] del/return are not functions
