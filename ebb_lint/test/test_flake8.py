@@ -649,6 +649,20 @@ yield from (b)
     ''',
 ])
 
+all_sources.extend(py3skip(s) for s in [
+    '''
+
+$L202$$L209$print(b)
+
+    ''',
+
+    '''
+
+$L202$print (b)
+
+    ''',
+])
+
 
 all_sources.extend(
     template.format(func=func)

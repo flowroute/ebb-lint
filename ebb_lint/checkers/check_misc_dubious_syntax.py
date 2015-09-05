@@ -140,6 +140,7 @@ def check_except_pass(p):
 | raise_stmt< stmt='raise' atom< lparen='(' any* ')' > >
 | assert_stmt< stmt='assert' atom< lparen='(' any* ')' > >
 | yield_expr< stmt='yield' atom< lparen='(' any* ')' > >
+| print_stmt< stmt='print' atom< lparen='(' any* ')' > >
 )
 
 """)
