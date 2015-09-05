@@ -165,6 +165,7 @@ L209
   ``del``,
   ``raise``,
   ``assert``,
+  ``print`` (in python 2, without ``print_function``)
   ``yield``,
   and ``yield from``
   are statements,
