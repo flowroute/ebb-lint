@@ -59,6 +59,9 @@ class Errors(enum.Enum):
     useless_parens = Error(
         209,
         '{stmt} is not a function; parentheses are not required')
+    no_side_effects = Error(
+        210,
+        'use a for loop instead of using {thing} for its side effect')
 
     whitespace_category = Error(
         300, 'errors related to whitespace')

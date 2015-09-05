@@ -448,15 +448,30 @@ spam = {delim[0]}{elem[0]}{delim[1]}
 
 
 all_sources.extend(
-    '''
+    template.format(delim=delim, elem=elem)
+    for delim, _ in delimiter_pairs
+    for elem in element_pairs
+    for template in [
+        '''
 
 spam = {delim[0]}
     $L201${elem[0]}
 {delim[1]}
 
-    '''.format(delim=delim, elem=elem)
-    for delim, _ in delimiter_pairs
-    for elem in element_pairs
+        ''',
+
+        '''
+
+$L210${delim[0]}{elem[0]} for x in y{delim[1]}
+
+        ''',
+
+        '''
+
+a = {delim[0]}{elem[0]} for x in y{delim[1]}
+
+        ''',
+    ]
     # Ignore this because it's a parenthesized expression, and not a tuple.
     if delim[0] != '(')
 
@@ -633,6 +648,24 @@ yield from (b)
 
     ''',
 ])
+
+
+all_sources.extend(
+    template.format(func=func)
+    for func in ['map', 'filter']
+    for template in [
+        '''
+
+$L210${func}(x, y)
+
+        ''',
+
+        '''
+
+a = {func}(x, y)
+
+        ''',
+    ])
 
 
 docstrings = [

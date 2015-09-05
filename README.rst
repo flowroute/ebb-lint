@@ -182,6 +182,22 @@ L209
 
     return(a + b)
 
+L210
+  Instead of intentionally relying on the side effects of
+  ``map``,
+  ``filter``,
+  or a comprehension,
+  write an explicit for loop.
+
+  This is okay::
+
+    for x in y:
+        print(x)
+
+  And this is not::
+
+    map(print, y)
+
 
 L3: Whitespace
 --------------

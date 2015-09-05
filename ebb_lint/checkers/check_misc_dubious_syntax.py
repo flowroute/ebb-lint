@@ -160,6 +160,33 @@ def check_useless_parens_on_yield_from(stmt, lparen):
     yield stmt, Errors.useless_parens, {'stmt': 'yield from'}
 
 
+@register_checker("""
+
+simple_stmt < power< f=('map' | 'filter') trailer< '(' any* ')' > any* > any* >
+
+""")
+def check_no_side_effects_function(f):
+    [f] = f
+    yield f, Errors.no_side_effects, {'thing': f.value}
+
+
+_expr_type = {
+    '[': 'a list comprehension',
+    '{': 'a dict or set comprehension',
+}
+
+
+@register_checker("""
+
+simple_stmt< ( atom< start='[' listmaker< any+ comp_for< any+ > > ']' >
+             | atom< start='{' dictsetmaker< any+ comp_for< any+ > > '}' >
+             ) any* >
+
+""")
+def check_no_side_effects_literal(start):
+    yield start, Errors.no_side_effects, {'thing': _expr_type[start.value]}
+
+
 # XXX: There's a bit of uncovered code below, but it's really just because I'm
 # coding defensively. I don't know if it's possible to get lib2to3 to emit an
 # AST that's in this particular shape, but I don't want to get caught offguard
