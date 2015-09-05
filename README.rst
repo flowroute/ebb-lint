@@ -4,6 +4,10 @@
 
 .. image:: https://img.shields.io/pypi/v/ebb-lint.svg?style=flat-square
 
+.. image:: https://img.shields.io/pypi/format/ebb-lint.svg?style=flat-square
+
+.. image:: https://img.shields.io/pypi/pyversions/ebb-lint.svg?style=flat-square
+
 .. image:: https://img.shields.io/pypi/l/ebb-lint.svg?style=flat-square
 
 
