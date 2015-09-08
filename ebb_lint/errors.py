@@ -62,6 +62,9 @@ class Errors(enum.Enum):
     no_side_effects = Error(
         210,
         'use a for loop instead of using {thing} for its side effect')
+    no_map_or_filter_with_lambda = Error(
+        211,
+        'use a comprehension instead of {func} with lambda')
 
     whitespace_category = Error(
         300, 'errors related to whitespace')

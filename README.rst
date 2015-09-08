@@ -203,6 +203,13 @@ L210
 
     map(print, y)
 
+L211
+  Using ``map`` or ``filter`` with a ``lambda`` as the first argument is always better written as list comprehension or generator expression.
+  An expression is more readable and extensible,
+  and less importantly,
+  doesn't incur as much function call overhead.
+
+
 
 L3: Whitespace
 --------------

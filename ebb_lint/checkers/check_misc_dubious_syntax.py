@@ -188,6 +188,18 @@ def check_no_side_effects_literal(start):
     yield start, Errors.no_side_effects, {'thing': _expr_type[start.value]}
 
 
+@register_checker("""
+
+power< f=('map' | 'filter') trailer< '(' arglist<
+    lambdef ',' any*
+> any* ')' > any* >
+
+""")
+def check_no_map_or_filter_with_lambda(f):
+    [f] = f
+    yield f, Errors.no_map_or_filter_with_lambda, {'func': f.value}
+
+
 # XXX: There's a bit of uncovered code below, but it's really just because I'm
 # coding defensively. I don't know if it's possible to get lib2to3 to emit an
 # AST that's in this particular shape, but I don't want to get caught offguard

@@ -679,6 +679,18 @@ $L210${func}(x, y)
 a = {func}(x, y)
 
         ''',
+
+        '''
+
+a = $L211${func}(lambda x: x, y)
+
+        ''',
+
+        '''
+
+a = $L211${func}(lambda x1, x2: x1 + x2, y, z)
+
+        ''',
     ])
 
 
