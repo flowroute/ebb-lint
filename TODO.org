@@ -1,4 +1,4 @@
-*** TODO [9/13]
+*** TODO [9/14]
  - [X] check for excess stuff in __init__.py
    - [X] no functions
    - [X] no classes
@@ -17,3 +17,4 @@
  - [ ] check for 'def' where 'class' is intended
  - [X] no list comps for side effects
  - [X] del/return are not functions
+ - [ ] catch misuse of super
