@@ -200,6 +200,15 @@ def check_no_map_or_filter_with_lambda(f):
     yield f, Errors.no_map_or_filter_with_lambda, {'func': f.value}
 
 
+@register_checker("""
+
+decorator< at='@' 'staticmethod' any* >
+
+""")
+def check_no_staticmethod_decorator(at):
+    yield at, Errors.no_staticmethod_decorator, {}
+
+
 # XXX: There's a bit of uncovered code below, but it's really just because I'm
 # coding defensively. I don't know if it's possible to get lib2to3 to emit an
 # AST that's in this particular shape, but I don't want to get caught offguard

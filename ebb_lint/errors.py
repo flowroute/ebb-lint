@@ -65,6 +65,9 @@ class Errors(enum.Enum):
     no_map_or_filter_with_lambda = Error(
         211,
         'use a comprehension instead of {func} with lambda')
+    no_staticmethod_decorator = Error(
+        212,
+        '@staticmethod is always wrong; you probably want @classmethod')
 
     whitespace_category = Error(
         300, 'errors related to whitespace')

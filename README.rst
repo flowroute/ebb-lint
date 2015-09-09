@@ -209,6 +209,30 @@ L211
   and less importantly,
   doesn't incur as much function call overhead.
 
+L212
+  Using ``@staticmethod`` is always wrong.
+  The two most common situations are:
+
+  - You want to do something with the class but without an instance,
+    in which case ``@classmethod`` is the correct solution.
+  - You want to 'namespace' a function on a class,
+    but this isn't Java,
+    so make it a module-scoped function instead.
+
+  Using ``staticmethod`` on its own is not a problem;
+  this is perfectly acceptable for testing purposes::
+
+    from some_module import do_some_more_io, some_io
+
+
+    def do_io():
+        return some_io()
+
+
+    class Spam(object):
+        do_io = staticmethod(do_io)
+        do_some_more_io = staticmethod(do_some_more_io)
+
 
 
 L3: Whitespace

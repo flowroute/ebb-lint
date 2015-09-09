@@ -347,6 +347,31 @@ finally:
     do_something_else()
 
     ''',
+
+    '''
+
+class C(object):
+    $L212$@staticmethod
+    def f():
+        pass
+
+    ''',
+
+    '''
+
+class C(object):
+    @classmethod
+    def f(cls):
+        pass
+
+    ''',
+
+    '''
+
+class C(object):
+    f = staticmethod(g)
+
+    ''',
 ]
 
 
