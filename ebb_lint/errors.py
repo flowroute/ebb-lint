@@ -69,8 +69,12 @@ class Errors(enum.Enum):
         212,
         '@staticmethod is always wrong; you probably want @classmethod')
 
-    whitespace_category = Error(
-        300, 'errors related to whitespace')
+    formatting_category = Error(
+        300, 'errors related to formatting')
     no_trailing_newline = Error(
         301,
         'files must end with a trailing newline')
+    line_too_long = Error(
+        302,
+        ('line too long ({length} > {which_limit} limit of {limit} '
+         'characters{extra})'))

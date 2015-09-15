@@ -26,13 +26,28 @@ Configuration
 =============
 
 Configuration does nothing but cause bugs or laxness,
-so ``ebb-lint`` has none.
+so ``ebb-lint`` recommends keeping the defaults as-is.
+However,
+there are two configuration options provided for dealing with `long lines`_.
+Both can be specified either
+on the command line by passing flags to ``flake8``,
+or with `the typical configuration methods <https://flake8.readthedocs.org/en/stable/config.html>`_.
+
+``hard-max-line-length``
+  Lines must never be longer than this value.
+  The default is 119 columns.
+
+``permissive-bulkiness-percentage``
+  Lines can exceed ``max-line-length``
+  (which is considered the "soft limit")
+  if and only if the line contains greater than or equal to this percentage of string literals *or* comments,
+  but the percentages of each are not combined.
+  The default is 67%.
+  For more detail, see the section about `long lines`_.
 
 .. _one-off scripts:
 
-If,
-however,
-one is writing a one-off script and wishes to use ``print`` against ``ebb-lint``\ 's wishes,
+If one is writing a one-off script and wishes to use ``print`` against ``ebb-lint``\ 's wishes,
 a comment can be added to the top of the file to disable that warning::
 
   # I sincerely swear that this is one-off code.
@@ -235,11 +250,61 @@ L212
 
 
 
-L3: Whitespace
+L3: Formatting
 --------------
 
 L301
   Files must end with a trailing newline.
+
+.. _long lines:
+
+L302
+  The line was too long.
+
+  Lines greater than ``hard-max-line-length``
+  (which is considered the "hard limit",
+  and by default is 119 columns)
+  are never allowed.
+  Lines greater than ``max-line-length``
+  (which is considered the "soft limit",
+  and by default is 79 columns)
+  are allowed if and only if the line contains above a certain percentage of string literals *or* comments.
+  The percentages of both are not combined.
+  The "certain percentage" allowed is ``permissive-bulkiness-percentage``,
+  which by default is 67%.
+
+  For all of the following examples,
+  the soft limit is 15 columns,
+  and the hard limit is 25 columns.
+
+  Disallowed because,
+  at 20 characters,
+  the line exceeds the soft limit,
+  and the whole line is only 15% string literals by character count::
+
+    ultradignified = 'y'
+
+  Allowed because the whole line is 80% string literals by character count::
+
+    t = 'electroplating'
+
+  Allowed because the whole line is 75% comments by character count::
+
+    f()  # accreditation
+
+  Disallowed because the whole line is 20% comments and 50% string literals by character count,
+  and neither of those is at or above 67%::
+
+    d = 'smallpox'  # ok
+
+  Disallowed because the whole line is 26 characters long,
+  which exceeds the hard limit::
+
+    thyroparathyroidectomize()
+
+
+  The ``hard-max-line-length`` and ``permissive-bulkiness-percentage`` can be configured;
+  see the section Configuration_.
 
 
 .. _flake8: https://flake8.readthedocs.org/en/stable/

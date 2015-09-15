@@ -1,4 +1,4 @@
-*** TODO [9/14]
+*** TODO [10/16]
  - [X] check for excess stuff in __init__.py
    - [X] no functions
    - [X] no classes
@@ -18,3 +18,5 @@
  - [X] no list comps for side effects
  - [X] del/return are not functions
  - [ ] catch misuse of super
+ - [X] see if 'line too long' errors can be smarter
+ - [ ] catch docstrings as comments?

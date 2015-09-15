@@ -23,6 +23,7 @@ extras_require['all'] = list({
 
 install_requires = [
     'flake8',
+    'intervaltree',
     'six',
     'venusian',
 ]
