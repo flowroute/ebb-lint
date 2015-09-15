@@ -17,7 +17,7 @@
 
 It's a `flake8`_ plugin!
 It lints for style problems!
-All you have to do to activate it is::
+All one has to do to activate it is::
 
   $ pip install ebb-lint
 
@@ -176,8 +176,8 @@ L207
 
 L208
   `Pokémon exception handling <http://c2.com/cgi/wiki?PokemonExceptionHandling>`_ is always a mistake.
-  If you really intend to catch and ignore exceptions,
-  explicitly name *which* exception types you wish to silence.
+  If one really intends to catch and ignore exceptions,
+  explicitly name *which* exception types one wishes to silence.
 
 L209
   ``return``,
@@ -228,9 +228,9 @@ L212
   Using ``@staticmethod`` is always wrong.
   The two most common situations are:
 
-  - You want to do something with the class but without an instance,
+  - One wants to do something with the class but without an instance,
     in which case ``@classmethod`` is the correct solution.
-  - You want to 'namespace' a function on a class,
+  - One wants to 'namespace' a function on a class,
     but this isn't Java,
     so make it a module-scoped function instead.
 
