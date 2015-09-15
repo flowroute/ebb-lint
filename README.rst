@@ -58,6 +58,16 @@ This comment must be above any statements in the code
 on a line by itself.
 
 
+noqa
+====
+
+``ebb-lint`` disables ``# noqa`` comments with extreme prejudice.
+The feature is over-used and over-general;
+it's not possible to only mark *certain* errors as acceptable,
+and as a result,
+it's possible for a line marked ``noqa`` for one error to completely mask a different error.
+
+
 Errors
 ======
 
@@ -306,6 +316,11 @@ L302
 
   The ``hard-max-line-length`` and ``permissive-bulkiness-percentage`` can be configured;
   see the section Configuration_.
+
+L303
+  noqa_ is ignored,
+  and as such,
+  ``# noqa`` comments should be deleted to reduce pointless noise.
 
 
 .. _flake8: https://flake8.readthedocs.org/en/stable/

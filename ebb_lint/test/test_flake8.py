@@ -381,6 +381,24 @@ class C(object):
     f = staticmethod(g)
 
     ''',
+
+    '''
+
+spam  $L303$# noqa
+
+    ''',
+
+    '''
+
+spam  # eggs $L303$# noqa
+
+    ''',
+
+    '''
+
+$L204$'a' 'b'  $L303$# noqa
+
+    ''',
 ]
 
 

@@ -78,3 +78,6 @@ class Errors(enum.Enum):
         302,
         ('line too long ({length} > {which_limit} limit of {limit} '
          'characters{extra})'))
+    no_noqa = Error(
+        303,
+        'noqa is ignored, so this comment is not useful')

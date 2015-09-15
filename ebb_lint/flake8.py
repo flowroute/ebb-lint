@@ -6,6 +6,7 @@ import sys
 from lib2to3.pgen2 import driver, token, tokenize
 from lib2to3 import patcomp, pygram, pytree
 
+import pep8
 import six
 import venusian
 from intervaltree import Interval, IntervalTree
@@ -13,6 +14,11 @@ from intervaltree import Interval, IntervalTree
 from ebb_lint._version import __version__
 from ebb_lint.errors import Errors
 from ebb_lint import checkers
+
+
+_pep8_noqa = pep8.noqa
+# This is a blight. Disable it unconditionally.
+pep8.noqa = lambda ign: False
 
 
 # I tried to make this omit coverage on one or the other side of this branch
@@ -254,7 +260,9 @@ class EbbLint(object):
 
     def _check_tree(self, tree):
         for node in tree.pre_order():
-            self._scan_node_for_ranges(node)
+            for error in self._scan_node_for_ranges(node):
+                yield error
+
             for pattern, checker, extra in self.collected_checkers:
                 results = {}
                 if not pattern.match(node, results):
@@ -281,6 +289,11 @@ class EbbLint(object):
             find_comments(node.prefix, byte - len(node.prefix)))
         for c, i in comments:
             self._intervals['comments'].add(i)
+            m = _pep8_noqa(c)
+            if m is not None:
+                yield self._message_for_pos(
+                    self.lines.position_of_byte(i.begin + m.start()),
+                    Errors.no_noqa)
 
     def _check_line_lengths(self):
         soft_limit = self.options.max_line_length
