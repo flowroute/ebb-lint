@@ -131,8 +131,8 @@ class Lines(object):
 
     def byte_of_pos(self, lineno, column):
         # This requires a bit of explanation. The source passed to lib2to3's
-        # parser has an extra newline addedin some cases, to deal with a bug in
-        # lib2to3 where it crashes hard if files don't end with a trailing
+        # parser has an extra newline added in some cases, to deal with a bug
+        # in lib2to3 where it crashes hard if files don't end with a trailing
         # newline. When that extra line is added, the final DEDENT token in the
         # file will have a lineno equal to the lines in the file plus one,
         # becase it's "at" a location that doesn't exist in the real file. If
