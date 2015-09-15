@@ -35,5 +35,8 @@ def check_trailing_commas(end, contents):
         # It's not a tuple or a generator expression; it's just something in
         # parentheses, so ignore it.
         return
-    if last_element_leaf.lineno != end.lineno:
+    # If there's no trailing comma, the whitespace between the last element and
+    # the closing delimiter must not contain a newline, as that would mean the
+    # end of the last element and the closing delimiter are on different lines.
+    if '\n' in end.prefix:
         yield last_element_leaf, Errors.no_trailing_comma_in_literal, {}

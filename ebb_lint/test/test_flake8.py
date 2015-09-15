@@ -443,6 +443,14 @@ spam = {delim[0]}
 
         '''
 
+spam = {delim[0]}{elem[0]}, {elem[1]}, """
+
+"""{delim[1]}
+
+        ''',
+
+        '''
+
 spam = {delim[0]}
     {elem[0]},
 {delim[1]}
