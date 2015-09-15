@@ -8,6 +8,7 @@ from lib2to3 import patcomp, pygram, pytree
 
 import six
 import venusian
+from intervaltree import Interval, IntervalTree
 
 from ebb_lint._version import __version__
 from ebb_lint.errors import Errors
@@ -78,18 +79,25 @@ else:  # pragma: nocover
             return pygram.python_grammar
 
 
-def find_comments(s):
+def find_comments(s, base_byte=0):
     fobj = io.StringIO(six.text_type(s))
-    for typ, tok, _, _, _ in tokenize.generate_tokens(fobj.readline):
+    lines = Lines(fobj)
+    fobj.seek(0)
+    for typ, tok, spos, epos, _ in tokenize.generate_tokens(fobj.readline):
         if typ == tokenize.COMMENT:
-            yield tok
+            yield tok, Interval(
+                lines.byte_of_pos(*spos) + base_byte,
+                lines.byte_of_pos(*epos) + base_byte)
 
 
-def parse_file(driver, filename):
+def read_file_using_source_encoding(filename):
     with open(filename, 'rb') as infile:
         encoding = tokenize.detect_encoding(infile.readline)[0]
     with io.open(filename, 'r', encoding=encoding) as infile:
-        source = infile.read()
+        return infile.read()
+
+
+def parse_source(driver, source):
     trailing_newline = not source or source.endswith('\n')
     # Thanks for this, lib2to3.
     if not trailing_newline:
@@ -105,32 +113,90 @@ class Lines(object):
             self.lines.append((count, line))
             count += len(line)
         self.last_pos = len(self.lines) - 1, len(self.lines[-1][1])
+        self.last_byte = count
 
     def __getitem__(self, idx):
         return self.lines[idx]
+
+    def __iter__(self):
+        for e, (count, line) in enumerate(self.lines):
+            if e == 0:
+                continue
+            yield e, count, line
 
     def position_of_byte(self, byte):
         lineno = bisect.bisect_left(self.lines, (byte + 1,)) - 1
         column = byte - self.lines[lineno][0]
         return lineno, column
 
+    def byte_of_pos(self, lineno, column):
+        # This requires a bit of explanation. The source passed to lib2to3's
+        # parser has an extra newline added in some cases, to deal with a bug
+        # in lib2to3 where it crashes hard if files don't end with a trailing
+        # newline. When that extra line is added, the final DEDENT token in the
+        # file will have a lineno equal to the lines in the file plus one,
+        # becase it's "at" a location that doesn't exist in the real file. If
+        # this case wasn't specifically caught, the self[lineno] would raise an
+        # exception because lineno is beyond the last index in self.lines. So,
+        # when that case is detected, return the final byte position.
+        if lineno == len(self.lines) and column == 0:
+            return self.last_byte
+        byte, _ = self[lineno]
+        byte += column
+        return byte
+
+    def byte_of_node(self, node):
+        return self.byte_of_pos(node.lineno, node.column)
+
+
+def byte_cardinality(tree):
+    ret = 0
+    for i in tree:
+        ret += i.end - i.begin
+    return ret
+
 
 class EbbLint(object):
     name = 'ebb_lint'
     version = __version__
 
+    collected_checkers = None
+    _source = None
     _lines = None
 
     def __init__(self, tree, filename):
         self.tree = tree
         self.filename = filename
+        self._intervals = {
+            'comments': IntervalTree(),
+            'string literals': IntervalTree(),
+        }
 
     @classmethod
     def add_options(cls, parser):
-        pass
+        parser.add_option('--hard-max-line-length', default=119, type=int,
+                          metavar='n',
+                          help='absolute maximum line length allowed')
+        parser.config_options.append('hard-max-line-length')
+        parser.add_option('--permissive-bulkiness-percentage', default=67,
+                          type=int, metavar='p', help=(
+                              'integer percentage of a line which must be '
+                              'string literals or comments to be allowed to '
+                              'pass the soft line limit'))
+        parser.config_options.append('permissive-bulkiness-percentage')
 
     @classmethod
     def parse_options(cls, options):
+        # We implement our own line-length checker because it's not possible to
+        # customize how another checker does its checking.
+        options.ignore += 'E501',
+        cls.options = options
+
+        # This vastly speeds up the test suite, since parse_options is called
+        # on every test now, and venusian does a lot of work.
+        if cls.collected_checkers is not None:
+            return
+
         collected_checkers = []
 
         def register_checker(pattern, checker, extra):
@@ -145,17 +211,21 @@ class EbbLint(object):
         cls.collected_checkers = collected_checkers
 
     @property
+    def source(self):
+        if self._source is None:
+            self._source = read_file_using_source_encoding(self.filename)
+        return self._source
+
+    @property
     def lines(self):
         if self._lines is None:
-            with open(self.filename) as infile:
-                self._lines = Lines(infile)
+            self._lines = Lines(self.source.splitlines(True))
         return self._lines
 
     def _message_for_node(self, node, error, **kw):
         line_offset = kw.pop('line_offset', None)
         if line_offset is None:
-            byte, _ = self.lines[node.lineno]
-            byte += node.column + kw.pop('offset', 0)
+            byte = self.lines.byte_of_node(node) + kw.pop('offset', 0)
             lineno, column = self.lines.position_of_byte(byte)
         else:
             lineno = node.lineno + line_offset
@@ -171,19 +241,75 @@ class EbbLint(object):
     def run(self):
         d = driver.Driver(
             grammar_for_filename(self.filename), convert=pytree.convert)
-        tree, trailing_newline = parse_file(d, self.filename)
+        tree, trailing_newline = parse_source(d, self.source)
         if not trailing_newline:
             yield self._message_for_pos(
                 self.lines.last_pos, Errors.no_trailing_newline)
+
+        for error in self._check_tree(tree):
+            yield error
+
+        for error in self._check_line_lengths():
+            yield error
+
+    def _check_tree(self, tree):
         for node in tree.pre_order():
+            self._scan_node_for_ranges(node)
             for pattern, checker, extra in self.collected_checkers:
                 results = {}
                 if not pattern.match(node, results):
                     continue
                 for k in extra.get('comments_for', ()):
-                    comments = list(find_comments(node.prefix))
-                    results[k + '_comments'] = comments
+                    results[k + '_comments'] = [
+                        c for c, _ in find_comments(node.prefix)]
                 if extra.get('pass_filename', False):
                     results['filename'] = self.filename
                 for error_node, error, kw in checker(**results):
                     yield self._message_for_node(error_node, error, **kw)
+
+    def _scan_node_for_ranges(self, node):
+        if node.children or (node.type != token.STRING and not node.prefix):
+            return
+
+        byte = self.lines.byte_of_node(node)
+
+        if node.type == token.STRING:
+            self._intervals['string literals'].add(Interval(
+                byte, byte + len(node.value)))
+
+        comments = list(
+            find_comments(node.prefix, byte - len(node.prefix)))
+        for c, i in comments:
+            self._intervals['comments'].add(i)
+
+    def _check_line_lengths(self):
+        soft_limit = self.options.max_line_length
+        hard_limit = self.options.hard_max_line_length
+        permitted_percentage = self.options.permissive_bulkiness_percentage
+        for lineno, line_start, line in self.lines:
+            line = line.rstrip('\r\n')
+            if len(line) <= soft_limit:
+                continue
+            if len(line) > hard_limit:
+                yield self._message_for_pos(
+                    (lineno, hard_limit), Errors.line_too_long,
+                    length=len(line), which_limit='hard', limit=hard_limit,
+                    extra='')
+                continue
+
+            percentages = {}
+            for name, i in self._intervals.items():
+                intersection = i.search(line_start, line_start + len(line))
+                n_bytes = byte_cardinality(intersection)
+                percentages[name] = n_bytes * 100 // len(line)
+
+            if any(p >= permitted_percentage for p in percentages.values()):
+                continue
+
+            extra = ' since the line has ' + '; '.join(
+                '{p}% {name}'.format(p=p, name=name)
+                for name, p in percentages.items())
+            yield self._message_for_pos(
+                (lineno, soft_limit), Errors.line_too_long,
+                length=len(line), which_limit='soft', limit=soft_limit,
+                extra=extra)

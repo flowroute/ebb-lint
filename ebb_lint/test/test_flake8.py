@@ -1,11 +1,13 @@
 from __future__ import unicode_literals
 
 import ast
+import functools
 import re
 import sys
 
 import pytest
 import six
+from flake8.engine import get_parser
 
 from ebb_lint.flake8 import EbbLint, Lines
 
@@ -37,10 +39,17 @@ def find_error_locations(source):
         lines.position_of_byte(b) + (code,) for b, code, _ in error_locations]
 
 
-@pytest.fixture(autouse=True, scope='session')
-def scan_for_checkers():
-    EbbLint.add_options(None)
-    EbbLint.parse_options(None)
+@pytest.fixture(autouse=True)
+def scan_for_checkers(request):
+    parser, options_hooks = get_parser()
+    args_marker = request.node.get_marker('flake8_args')
+    if args_marker is None:
+        args = []
+    else:
+        args = list(args_marker.args)
+    opts, args = parser.parse_args(args)
+    opts.ignore = tuple(opts.ignore)
+    EbbLint.parse_options(opts)
 
 
 all_sources = [
@@ -373,6 +382,160 @@ class C(object):
 
     ''',
 ]
+
+
+line_length_test_mark_generator = functools.partial(
+    pytest.mark.flake8_args,
+    '--max-line-length', '15', '--hard-max-line-length', '25')
+
+
+line_length_test_mark = line_length_test_mark_generator()
+all_sources.extend(line_length_test_mark(s) for s in [
+    '''
+
+AbcdeAbcdeAbcde
+
+    ''',
+
+    '''
+
+AbcdeAbcdeAbcde$L302$f
+
+    ''',
+
+    '''
+
+AbcdeAbcdeAbcd $L302$= 'e'
+
+    ''',
+
+    '''
+
+A = 'bcdeAbcdeAbcde'
+
+    ''',
+
+    '''
+
+A = 'bcdeAbcd' $L302$ # eA
+
+    ''',
+
+    '''
+
+AbcdeAbcdeAbcdeAbcdeAbcde$L302$f
+
+    ''',
+
+    '''
+
+AbcdeAbcdeAbcdeAbcdeAbcde$L302$fghijklmnopqrstuvwxyz
+
+    ''',
+])
+
+
+def permissive_percentage_test_mark(p, s):
+    return line_length_test_mark_generator(
+        '--permissive-bulkiness-percentage', str(p))(s)
+
+
+all_sources.extend(permissive_percentage_test_mark(p, s) for p, s in [
+    (100, '''
+
+"AbcdeAbcdeAbcdeAbc"
+
+    '''),
+
+    (100, '''
+
+# AbcdeAbcdeAbcdeAbc
+
+    '''),
+
+    (100, '''
+
+a = "AbcdeAbcde$L302$Abcde"
+
+    '''),
+
+    (100, '''
+
+a # AbcdeAbcdeA$L302$bcdeA
+
+    '''),
+
+    (50, '''
+
+A = 'bcdeAbcd'  # eA
+
+    '''),
+
+    (50, '''
+
+A = 'bcde'  # A$L302$bcdeA
+
+    '''),
+
+    (20, '''
+
+A = 'bcdeAbcd'  # eA
+
+    '''),
+
+    (0, '''
+
+A = 'bcdeAbcd'  # eA
+
+    '''),
+])
+
+
+hard_limit_only_test_mark = pytest.mark.flake8_args(
+    '--max-line-length', '15', '--hard-max-line-length', '15')
+all_sources.extend(hard_limit_only_test_mark(s) for s in [
+    '''
+
+AbcdeAbcdeAbcde
+
+    ''',
+
+    '''
+
+AbcdeAbcdeAbcde$L302$f
+
+    ''',
+
+    '''
+
+AbcdeAbcdeAbcd $L302$= 'e'
+
+    ''',
+
+    '''
+
+A = 'bcdeAbcdeA$L302$bcde'
+
+    ''',
+
+    '''
+
+A = 'bcdeAbcd' $L302$ # eA
+
+    ''',
+
+    '''
+
+AbcdeAbcdeAbcde$L302$AbcdeAbcdef
+
+    ''',
+
+    '''
+
+AbcdeAbcdeAbcde$L302$AbcdeAbcdefghijklmnopqrstuvwxyz
+
+    ''',
+])
 
 
 contexts = [
