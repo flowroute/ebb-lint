@@ -491,6 +491,53 @@ A = 'bcdeAbcd'  # eA
 ])
 
 
+hard_limit_only_test_mark = pytest.mark.flake8_args(
+    '--max-line-length', '15', '--hard-max-line-length', '15')
+all_sources.extend(hard_limit_only_test_mark(s) for s in [
+    '''
+
+AbcdeAbcdeAbcde
+
+    ''',
+
+    '''
+
+AbcdeAbcdeAbcde$L302$f
+
+    ''',
+
+    '''
+
+AbcdeAbcdeAbcd $L302$= 'e'
+
+    ''',
+
+    '''
+
+A = 'bcdeAbcdeA$L302$bcde'
+
+    ''',
+
+    '''
+
+A = 'bcdeAbcd' $L302$ # eA
+
+    ''',
+
+    '''
+
+AbcdeAbcdeAbcde$L302$AbcdeAbcdef
+
+    ''',
+
+    '''
+
+AbcdeAbcdeAbcde$L302$AbcdeAbcdefghijklmnopqrstuvwxyz
+
+    ''',
+])
+
+
 contexts = [
     ('# I sincerely swear that this is one-off code.', ''),
 
