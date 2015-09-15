@@ -17,7 +17,7 @@
 
 It's a `flake8`_ plugin!
 It lints for style problems!
-All one has to do to activate it is::
+To activate it::
 
   $ pip install ebb-lint
 
@@ -40,15 +40,16 @@ or with `the typical configuration methods <https://flake8.readthedocs.org/en/st
 ``permissive-bulkiness-percentage``
   Lines can exceed ``max-line-length``
   (which is considered the "soft limit")
-  if and only if the line contains greater than or equal to this percentage of string literals *or* comments,
+  only if the line contains greater than or equal to this percentage of string literals *or* comments,
   but the percentages of each are not combined.
   The default is 67%.
   For more detail, see the section about `long lines`_.
 
 .. _one-off scripts:
 
-If one is writing a one-off script and wishes to use ``print`` against ``ebb-lint``\ 's wishes,
-a comment can be added to the top of the file to disable that warning::
+When writing a one-off script,
+to use ``print`` against ``ebb-lint``\ 's wishes,
+add a comment to the top of the file to disable that warning::
 
   # I sincerely swear that this is one-off code.
 
@@ -176,8 +177,8 @@ L207
 
 L208
   `Pokémon exception handling <http://c2.com/cgi/wiki?PokemonExceptionHandling>`_ is always a mistake.
-  If one really intends to catch and ignore exceptions,
-  explicitly name *which* exception types one wishes to silence.
+  If the intent is *really* to catch and ignore exceptions,
+  explicitly name *which* exception types to silence.
 
 L209
   ``return``,
@@ -228,9 +229,9 @@ L212
   Using ``@staticmethod`` is always wrong.
   The two most common situations are:
 
-  - One wants to do something with the class but without an instance,
+  - Wanting to do something with the class but without an instance,
     in which case ``@classmethod`` is the correct solution.
-  - One wants to 'namespace' a function on a class,
+  - Wanting to 'namespace' a function on a class,
     but this isn't Java,
     so make it a module-scoped function instead.
 
