@@ -3,3 +3,8 @@ branch = True
 source = ebb_lint
 omit =
     */test/*
+
+[report]
+exclude_lines =
+    ✘$TOX_ENVNAME
+    pragma: no ?cover

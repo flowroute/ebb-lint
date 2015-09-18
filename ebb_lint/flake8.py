@@ -1,3 +1,5 @@
+# coding: utf-8
+
 from __future__ import unicode_literals
 
 import bisect
@@ -21,15 +23,13 @@ _pep8_noqa = pep8.noqa
 pep8.noqa = lambda ign: False
 
 
-# I tried to make this omit coverage on one or the other side of this branch
-# depending on whether we're testing py2 or py3, but that ended up being a
-# mess. Also, detect_future_features isn't fully covered, but I don't really
-# care, because I don't want to rewrite it. Maybe if it becomes more relevant
-# I'll pull it out of this suite and actually properly unit test it, but right
-# now I feel like it's mostly just working around a lib2to3 deficiency so I
-# don't care enough to do anything else.
+# detect_future_features isn't fully covered, but I don't really care, because
+# I don't want to rewrite it. Maybe if it becomes more relevant I'll pull it
+# out of this suite and actually properly unit test it, but right now I feel
+# like it's mostly just working around a lib2to3 deficiency so I don't care
+# enough to do anything else. It's stolen from lib2to3 directly. Why was this a
+# private function? Ugh.
 
-# Stolen from lib2to3 directly. Why was this a private function? Ugh.
 def detect_future_features(infile):  # pragma: nocover
     have_docstring = False
     gen = tokenize.generate_tokens(infile.readline)
@@ -72,11 +72,11 @@ def detect_future_features(infile):  # pragma: nocover
     return frozenset(features)
 
 
-if six.PY3:  # pragma: nocover
+if six.PY3:  # ✘py27
     def grammar_for_future_features(future_features):
         return pygram.python_grammar_no_print_statement
 
-else:  # pragma: nocover
+else:  # ✘py33 ✘py34
     def grammar_for_future_features(future_features):
         if 'print_function' in future_features:
             return pygram.python_grammar_no_print_statement
