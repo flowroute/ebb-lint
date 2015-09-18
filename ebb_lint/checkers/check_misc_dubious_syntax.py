@@ -1,3 +1,5 @@
+# coding: utf-8
+
 from __future__ import unicode_literals
 
 import os
@@ -64,15 +66,21 @@ def check_for_print(p):
     yield p, Errors.no_print, {}
 
 
-@register_checker("""
+@register_checker(
+    """
 
 ( import_from< 'from' mod=(NAME | dotted_name) any* >
 | import_name< 'import' mod=(NAME | dotted_name) any* >
 | dotted_as_name< mod=(NAME | dotted_name) any* >
 )
 
-""", pass_filename=True)
-def check_for_implicit_relative_imports(filename, mod):
+    """,
+    pass_filename=True, pass_future_features=True,
+    python_disabled_version=(3, 0))
+def check_for_implicit_relative_imports(
+        filename, future_features, mod):  # ✘py33 ✘py34
+    if 'absolute_import' in future_features:
+        return
     [mod] = mod
     dirname = os.path.dirname(filename)
     segments = [l.value for l in mod.pre_order() if l.type == token.NAME]
@@ -155,7 +163,7 @@ def check_useless_parens(stmt, lparen):
 yield_expr< stmt='yield' yield_arg< 'from' atom< lparen='(' any* ')' > > >
 
 """, python_minimum_version=(3, 4))
-def check_useless_parens_on_yield_from(stmt, lparen):
+def check_useless_parens_on_yield_from(stmt, lparen):  # ✘py27 ✘py33
     if lparen.prefix:
         return
     yield stmt, Errors.useless_parens, {'stmt': 'yield from'}

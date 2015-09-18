@@ -1,3 +1,5 @@
+# coding: utf-8
+
 from __future__ import unicode_literals
 
 import bisect
@@ -21,64 +23,61 @@ _pep8_noqa = pep8.noqa
 pep8.noqa = lambda ign: False
 
 
-# I tried to make this omit coverage on one or the other side of this branch
-# depending on whether we're testing py2 or py3, but that ended up being a
-# mess. Also, detect_future_features isn't fully covered, but I don't really
-# care, because I don't want to rewrite it. Maybe if it becomes more relevant
-# I'll pull it out of this suite and actually properly unit test it, but right
-# now I feel like it's mostly just working around a lib2to3 deficiency so I
-# don't care enough to do anything else.
+# detect_future_features isn't fully covered, but I don't really care, because
+# I don't want to rewrite it. Maybe if it becomes more relevant I'll pull it
+# out of this suite and actually properly unit test it, but right now I feel
+# like it's mostly just working around a lib2to3 deficiency so I don't care
+# enough to do anything else. It's stolen from lib2to3 directly. Why was this a
+# private function? Ugh.
 
-if six.PY3:  # pragma: nocover
-    def grammar_for_filename(filename):
+def detect_future_features(infile):  # pragma: nocover
+    have_docstring = False
+    gen = tokenize.generate_tokens(infile.readline)
+
+    def advance():
+        tok = next(gen)
+        return tok[0], tok[1]
+
+    ignore = frozenset((token.NEWLINE, tokenize.NL, token.COMMENT))
+    features = set()
+    try:
+        while True:
+            tp, value = advance()
+            if tp in ignore:
+                continue
+            elif tp == token.STRING:
+                if have_docstring:
+                    break
+                have_docstring = True
+            elif tp == token.NAME and value == 'from':
+                tp, value = advance()
+                if tp != token.NAME or value != '__future__':
+                    break
+                tp, value = advance()
+                if tp != token.NAME or value != 'import':
+                    break
+                tp, value = advance()
+                if tp == token.OP and value == '(':
+                    tp, value = advance()
+                while tp == token.NAME:
+                    features.add(value)
+                    tp, value = advance()
+                    if tp != token.OP or value != ',':
+                        break
+                    tp, value = advance()
+            else:
+                break
+    except StopIteration:
+        pass
+    return frozenset(features)
+
+
+if six.PY3:  # ✘py27
+    def grammar_for_future_features(future_features):
         return pygram.python_grammar_no_print_statement
 
-else:  # pragma: nocover
-    # Stolen from lib2to3 directly. Why was this a private function? Ugh.
-    def detect_future_features(infile):
-        have_docstring = False
-        gen = tokenize.generate_tokens(infile.readline)
-
-        def advance():
-            tok = next(gen)
-            return tok[0], tok[1]
-
-        ignore = frozenset((token.NEWLINE, tokenize.NL, token.COMMENT))
-        features = set()
-        try:
-            while True:
-                tp, value = advance()
-                if tp in ignore:
-                    continue
-                elif tp == token.STRING:
-                    if have_docstring:
-                        break
-                    have_docstring = True
-                elif tp == token.NAME and value == 'from':
-                    tp, value = advance()
-                    if tp != token.NAME or value != '__future__':
-                        break
-                    tp, value = advance()
-                    if tp != token.NAME or value != 'import':
-                        break
-                    tp, value = advance()
-                    if tp == token.OP and value == '(':
-                        tp, value = advance()
-                    while tp == token.NAME:
-                        features.add(value)
-                        tp, value = advance()
-                        if tp != token.OP or value != ',':
-                            break
-                        tp, value = advance()
-                else:
-                    break
-        except StopIteration:
-            pass
-        return frozenset(features)
-
-    def grammar_for_filename(filename):
-        with open(filename, 'r') as infile:
-            future_features = detect_future_features(infile)
+else:  # ✘py33 ✘py34
+    def grammar_for_future_features(future_features):
         if 'print_function' in future_features:
             return pygram.python_grammar_no_print_statement
         else:
@@ -155,10 +154,10 @@ class Lines(object):
         return self.byte_of_pos(node.lineno, node.column)
 
 
-def byte_cardinality(tree):
+def byte_intersection(tree, lower, upper):
     ret = 0
-    for i in tree:
-        ret += i.end - i.begin
+    for i in tree.search(lower, upper):
+        ret += min(i.end, upper) - max(i.begin, lower)
     return ret
 
 
@@ -209,6 +208,9 @@ class EbbLint(object):
             if ('python_minimum_version' in extra
                     and sys.version_info < extra['python_minimum_version']):
                 return
+            if ('python_disabled_version' in extra
+                    and sys.version_info > extra['python_disabled_version']):
+                return
             pattern = patcomp.compile_pattern(pattern)
             collected_checkers.append((pattern, checker, extra))
 
@@ -245,8 +247,11 @@ class EbbLint(object):
         return lineno, column, message, type(self)
 
     def run(self):
+        with open(self.filename, 'r') as infile:
+            self.future_features = detect_future_features(infile)
         d = driver.Driver(
-            grammar_for_filename(self.filename), convert=pytree.convert)
+            grammar_for_future_features(self.future_features),
+            convert=pytree.convert)
         tree, trailing_newline = parse_source(d, self.source)
         if not trailing_newline:
             yield self._message_for_pos(
@@ -272,6 +277,8 @@ class EbbLint(object):
                         c for c, _ in find_comments(node.prefix)]
                 if extra.get('pass_filename', False):
                     results['filename'] = self.filename
+                if extra.get('pass_future_features', False):
+                    results['future_features'] = self.future_features
                 for error_node, error, kw in checker(**results):
                     yield self._message_for_node(error_node, error, **kw)
 
@@ -310,11 +317,12 @@ class EbbLint(object):
                     extra='')
                 continue
 
+            line_end = line_start + len(line)
             percentages = {}
             for name, i in self._intervals.items():
-                intersection = i.search(line_start, line_start + len(line))
-                n_bytes = byte_cardinality(intersection)
-                percentages[name] = n_bytes * 100 // len(line)
+                n_bytes = byte_intersection(i, line_start, line_end)
+                percentages[name] = p = n_bytes * 100 // len(line)
+                assert 0 <= p <= 100, 'line percentage not in range'
 
             if any(p >= permitted_percentage for p in percentages.values()):
                 continue

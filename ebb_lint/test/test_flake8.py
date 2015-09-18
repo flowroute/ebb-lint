@@ -12,6 +12,7 @@ from flake8.engine import get_parser
 from ebb_lint.flake8 import EbbLint, Lines
 
 
+py2skip = pytest.mark.skipif(not six.PY3, reason='not runnable on python 2')
 py3skip = pytest.mark.skipif(six.PY3, reason='not runnable on python 3')
 pre_py34skip = pytest.mark.skipif(
     sys.version_info < (3, 4), reason='not runnable before python 3.4')
@@ -424,6 +425,36 @@ AbcdeAbcdeAbcde$L302$f
     '''
 
 AbcdeAbcdeAbcd $L302$= 'e'
+
+    ''',
+
+    '''
+
+AbcdeAbcdeAbcd $L302$= """
+
+This is a long
+docstring. It's
+not wide, but
+it has more
+than 25
+characters.
+
+"""
+
+    ''',
+
+    '''
+
+A = """
+
+This is a long
+docstring. It's
+not wide, but
+it has more
+than 25
+characters.
+
+""", AbcdeAbcde$L302$Abcde
 
     ''',
 
@@ -1094,12 +1125,14 @@ all_filename_sources = [
 
 @pytest.fixture
 def assert_lint():
-    def check(source, sourcefile):
+    def check(source, sourcefile, no_errors=False):
         # Strip trailing spaces, since the most comfortable triple-quoted
         # string format will have extra spaces on the last line. If this isn't
         # removed, it'll throw off the trailing newline checker.
         source = source.rstrip(' ')
         source, error_locations = find_error_locations(source)
+        if no_errors:
+            error_locations = []
         sourcefile.write_text(source, encoding='utf-8')
         lint = EbbLint(ast.parse(source), sourcefile.strpath)
         actual = [
@@ -1158,6 +1191,24 @@ import $L206$eggs.eggs
     {
         'spam.py': '''
 
+from __future__ import absolute_import
+
+import eggs
+
+        ''',
+
+        'eggs.py': '''
+
+from __future__ import absolute_import
+
+import spam
+
+        ''',
+    },
+
+    {
+        'spam.py': '''
+
 import eggs.eggs
 
         ''',
@@ -1201,8 +1252,19 @@ all_implicit_relative_import_sources = [
 
 @pytest.mark.parametrize(
     ('to_test', 'sources'), all_implicit_relative_import_sources)
+@py3skip
 def test_linting_implicit_relative_imports(
         assert_lint, tmpdir, to_test, sources):
     for name, source in sources.items():
         tmpdir.join(name).write_text(source, encoding='utf-8', ensure=True)
     assert_lint(sources[to_test], tmpdir.join(to_test))
+
+
+@pytest.mark.parametrize(
+    ('to_test', 'sources'), all_implicit_relative_import_sources)
+@py2skip
+def test_linting_implicit_relative_imports_disabled_on_py3(
+        assert_lint, tmpdir, to_test, sources):
+    for name, source in sources.items():
+        tmpdir.join(name).write_text(source, encoding='utf-8', ensure=True)
+    assert_lint(sources[to_test], tmpdir.join(to_test), no_errors=True)
