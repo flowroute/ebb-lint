@@ -64,15 +64,20 @@ def check_for_print(p):
     yield p, Errors.no_print, {}
 
 
-@register_checker("""
+@register_checker(
+    """
 
 ( import_from< 'from' mod=(NAME | dotted_name) any* >
 | import_name< 'import' mod=(NAME | dotted_name) any* >
 | dotted_as_name< mod=(NAME | dotted_name) any* >
 )
 
-""", pass_filename=True)
-def check_for_implicit_relative_imports(filename, mod):
+    """,
+    pass_filename=True, pass_future_features=True,
+    python_disabled_version=(3, 0))
+def check_for_implicit_relative_imports(filename, future_features, mod):
+    if 'absolute_import' in future_features:
+        return
     [mod] = mod
     dirname = os.path.dirname(filename)
     segments = [l.value for l in mod.pre_order() if l.type == token.NAME]
