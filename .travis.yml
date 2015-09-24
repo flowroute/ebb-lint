@@ -16,8 +16,8 @@ matrix:
 
 
 install:
-  - "pip install tox coveralls"
+  - "pip install tox codecov"
 script:
   - "tox -- -rs"
 after_success:
-  - "coveralls"
+  - "codecov"
