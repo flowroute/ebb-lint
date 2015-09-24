@@ -1,6 +1,6 @@
 .. image:: https://img.shields.io/travis/flowroute/ebb-lint/master.svg?style=flat-square
 
-.. image:: https://img.shields.io/coveralls/flowroute/ebb-lint/master.svg?style=flat-square
+.. image:: https://img.shields.io/codecov/c/github/flowroute/ebb-lint/master.svg?style=flat-square
 
 .. image:: https://img.shields.io/pypi/v/ebb-lint.svg?style=flat-square
 
