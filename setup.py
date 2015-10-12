@@ -1,5 +1,4 @@
 import os
-import sys
 
 from setuptools import setup
 
@@ -15,6 +14,9 @@ extras_require = {
         'pytest',
         'pytest-cov',
     ],
+    ':python_version < "3.4"': [
+        'enum34',
+    ],
 }
 
 extras_require['all'] = list({
@@ -27,9 +29,6 @@ install_requires = [
     'six',
     'venusian',
 ]
-
-if sys.version_info < (3, 4):
-    install_requires.append('enum34')
 
 
 with open('README.rst') as infile:
