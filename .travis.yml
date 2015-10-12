@@ -16,6 +16,7 @@ matrix:
 
 
 install:
+  - "pip install -U pip setuptools"
   - "pip install tox codecov"
 script:
   - "tox -- -rs"
