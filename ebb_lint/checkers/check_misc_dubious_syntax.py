@@ -162,7 +162,7 @@ def check_useless_parens(stmt, lparen):
 
 yield_expr< stmt='yield' yield_arg< 'from' atom< lparen='(' any* ')' > > >
 
-""", python_minimum_version=(3, 4))
+""", python_minimum_version=(3, 4, 1))
 def check_useless_parens_on_yield_from(stmt, lparen):  # ✘py27 ✘py33
     if lparen.prefix:
         return
