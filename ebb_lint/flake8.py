@@ -3,15 +3,16 @@
 from __future__ import unicode_literals
 
 import bisect
+import codecs
 import io
-import sys
-from lib2to3.pgen2 import driver, token, tokenize
-from lib2to3 import patcomp, pygram, pytree
-
 import pep8
 import six
+import sys
 import venusian
+
 from intervaltree import Interval, IntervalTree
+from lib2to3.pgen2 import driver, token, tokenize
+from lib2to3 import patcomp, pygram, pytree
 
 from ebb_lint._version import __version__
 from ebb_lint.errors import Errors
@@ -96,10 +97,14 @@ def find_comments(s, base_byte=0):
 
 
 def read_file_using_source_encoding(filename):
+    if filename == 'stdin':
+        reader = codecs.getreader(getattr(sys.stdin, 'encoding') or 'utf-8')
+        return reader(sys.stdin).read()
+
     with open(filename, 'rb') as infile:
         encoding = tokenize.detect_encoding(infile.readline)[0]
-    with io.open(filename, 'r', encoding=encoding) as infile:
-        return infile.read()
+    with io.open(filename, 'r', encoding=encoding) as infile_with_encoding:
+        return infile_with_encoding.read()
 
 
 def parse_source(driver, source):
@@ -247,8 +252,16 @@ class EbbLint(object):
         return lineno, column, message, type(self)
 
     def run(self):
-        with open(self.filename, 'r') as infile:
-            self.future_features = detect_future_features(infile)
+        if self.filename == 'stdin':
+            try:
+                self.future_features = detect_future_features(sys.stdin)
+            finally:
+                # like the `with open()` pattern, tries to ensure we can read
+                # from this source again in the future.
+                sys.stdin.seek(0)
+        else:
+            with open(self.filename, 'r') as infile:
+                self.future_features = detect_future_features(infile)
         d = driver.Driver(
             grammar_for_future_features(self.future_features),
             convert=pytree.convert)
