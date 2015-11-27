@@ -14,7 +14,7 @@ extras_require = {
         'pytest',
         'pytest-cov',
     ],
-    ':python_version < "3.4"': [
+    'python_version < "3.4"': [
         'enum34',
     ],
 }
