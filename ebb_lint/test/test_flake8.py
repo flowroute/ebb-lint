@@ -1,13 +1,15 @@
+# -*- coding: utf-8; -*-
 from __future__ import unicode_literals
 
 import ast
 import functools
+import pytest
 import re
+import six
 import sys
 
-import pytest
-import six
 from flake8.engine import get_parser
+from io import BytesIO
 
 from ebb_lint.flake8 import EbbLint, Lines
 
@@ -1152,6 +1154,23 @@ def test_linting_with_filename(assert_lint, tmpdir, source, filename):
 def test_linting_with_default_filename(assert_lint, tmpdir, source):
     sourcefile = tmpdir.join('source.py')
     assert_lint(source, sourcefile)
+
+
+@pytest.mark.parametrize('source', all_sources)
+def test_linting_with_stdin(monkeypatch, source):
+    class FakeBuffer(BytesIO):
+        encoding = 'utf-8'
+
+    source = source.rstrip(u' ')
+    clean_source, error_locations = find_error_locations(source)
+    monkeypatch.setattr(sys, 'stdin',
+                        FakeBuffer(clean_source.encode('utf-8')))
+
+    lint = EbbLint(ast.parse(clean_source), 'stdin')
+    actual = [
+        (line, col, message[:4]) for line, col, message, _ in lint.run()]
+
+    assert actual == error_locations
 
 
 implicit_relative_import_sources = [
