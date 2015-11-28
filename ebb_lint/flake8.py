@@ -5,14 +5,14 @@ from __future__ import unicode_literals
 import bisect
 import codecs
 import io
-import pep8
-import six
 import sys
-import venusian
-
-from intervaltree import Interval, IntervalTree
 from lib2to3.pgen2 import driver, token, tokenize
 from lib2to3 import patcomp, pygram, pytree
+
+import pep8
+import six
+import venusian
+from intervaltree import Interval, IntervalTree
 
 from ebb_lint._version import __version__
 from ebb_lint.errors import Errors
