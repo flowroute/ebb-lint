@@ -254,7 +254,9 @@ class EbbLint(object):
     def run(self):
         if self.filename == 'stdin':
             try:
-                self.future_features = detect_future_features(sys.stdin)
+                enc = getattr(sys.stdin, 'encoding') or 'utf-8'
+                stdin_reader = codecs.getreader(enc)(sys.stdin)
+                self.future_features = detect_future_features(stdin_reader)
             finally:
                 # like the `with open()` pattern, tries to ensure we can read
                 # from this source again in the future.
