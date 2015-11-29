@@ -3,13 +3,13 @@ from __future__ import unicode_literals
 
 import ast
 import functools
-import pytest
 import re
-import six
 import sys
-
-from flake8.engine import get_parser
 from io import BytesIO
+
+import pytest
+import six
+from flake8.engine import get_parser
 
 from ebb_lint.flake8 import EbbLint, Lines
 
