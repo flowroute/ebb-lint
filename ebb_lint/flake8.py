@@ -85,7 +85,7 @@ else:  # ✘py33 ✘py34
 
 
 def find_comments(s, base_byte=0):
-    fobj = io.StringIO(six.text_type(s))
+    fobj = io.StringIO(six.text_type(s).rstrip(' \t\r\n\\'))
     lines = Lines(fobj)
     fobj.seek(0)
     for typ, tok, spos, epos, _ in tokenize.generate_tokens(fobj.readline):
