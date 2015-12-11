@@ -76,7 +76,7 @@ if six.PY3:  # ✘py27
     def grammar_for_future_features(future_features):
         return pygram.python_grammar_no_print_statement
 
-else:  # ✘py33 ✘py34
+else:  # ✘py33 ✘py34 ✘py35
     def grammar_for_future_features(future_features):
         if 'print_function' in future_features:
             return pygram.python_grammar_no_print_statement
