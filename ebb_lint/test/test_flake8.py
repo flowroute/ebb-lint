@@ -5,8 +5,8 @@ import ast
 import functools
 import re
 import sys
-from io import BytesIO
 
+import pep8
 import pytest
 import six
 from flake8.engine import get_parser
@@ -27,6 +27,10 @@ _code_pattern = re.compile(r"""
 
 
 def find_error_locations(source):
+    # Strip trailing spaces, since the most comfortable triple-quoted
+    # string format will have extra spaces on the last line. If this isn't
+    # removed, it'll throw off the trailing newline checker.
+    source = source.rstrip(' ')
     error_locations = []
 
     def replacement(match):
@@ -1125,21 +1129,20 @@ all_filename_sources = [
     ('__init__.py', source) for source in dunder_init_sources]
 
 
+def assert_ebb_lint(source_text, source_path, error_locations):
+    lint = EbbLint(ast.parse(source_text), source_path)
+    return [
+        (line, col, message[:4]) for line, col, message, _ in lint.run()]
+
+
 @pytest.fixture
 def assert_lint():
     def check(source, sourcefile, no_errors=False):
-        # Strip trailing spaces, since the most comfortable triple-quoted
-        # string format will have extra spaces on the last line. If this isn't
-        # removed, it'll throw off the trailing newline checker.
-        source = source.rstrip(' ')
-        source, error_locations = find_error_locations(source)
+        clean_source, error_locations = find_error_locations(source)
         if no_errors:
             error_locations = []
-        sourcefile.write_text(source, encoding='utf-8')
-        lint = EbbLint(ast.parse(source), sourcefile.strpath)
-        actual = [
-            (line, col, message[:4]) for line, col, message, _ in lint.run()]
-        assert actual == error_locations
+        sourcefile.write_text(clean_source, encoding='utf-8')
+        assert_ebb_lint(clean_source, sourcefile.strpath, error_locations)
 
     return check
 
@@ -1156,21 +1159,21 @@ def test_linting_with_default_filename(assert_lint, tmpdir, source):
     assert_lint(source, sourcefile)
 
 
-@pytest.mark.parametrize('source', all_sources)
-def test_linting_with_stdin(monkeypatch, source):
-    class FakeBuffer(BytesIO):
-        encoding = 'utf-8'
+if six.PY2:
+    @pytest.mark.parametrize('source', all_sources)
+    def test_linting_with_stdin_bytes(monkeypatch, source):
+        clean_source, error_locations = find_error_locations(source)
+        clean_source_bytes = clean_source.encode('utf-8')
+        monkeypatch.setattr(
+            pep8, 'stdin_get_value', lambda: clean_source_bytes)
+        assert_ebb_lint(clean_source, 'stdin', error_locations)
 
-    source = source.rstrip(u' ')
-    clean_source, error_locations = find_error_locations(source)
-    monkeypatch.setattr(sys, 'stdin',
-                        FakeBuffer(clean_source.encode('utf-8')))
-
-    lint = EbbLint(ast.parse(clean_source), 'stdin')
-    actual = [
-        (line, col, message[:4]) for line, col, message, _ in lint.run()]
-
-    assert actual == error_locations
+else:
+    @pytest.mark.parametrize('source', all_sources)
+    def test_linting_with_stdin_text(monkeypatch, source):
+        clean_source, error_locations = find_error_locations(source)
+        monkeypatch.setattr(pep8, 'stdin_get_value', lambda: clean_source)
+        assert_ebb_lint(clean_source, 'stdin', error_locations)
 
 
 implicit_relative_import_sources = [
