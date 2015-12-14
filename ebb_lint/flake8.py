@@ -273,7 +273,9 @@ class EbbLint(object):
                 if not pattern.match(node, results):
                     continue
                 for k in extra.get('comments_for', ()):
-                    # XXX: this doesn't use `k` for finding the node
+                    # XXX: this doesn't use `k` for finding the node; `k` is
+                    # supposed to name a specific node, but it isn't used when
+                    # choosing which node is added to results.
                     results[k + '_comments'] = [
                         c for c, _ in find_comments(node.prefix)]
                 if extra.get('pass_filename', False):
