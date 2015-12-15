@@ -233,7 +233,7 @@ class EbbLint(object):
         if self._source is None:
             if self.filename != 'stdin':
                 self._source = read_file_using_source_encoding(self.filename)
-            elif six.PY2:  # ✘py33 ✘py34
+            elif six.PY2:  # ✘py33 ✘py34 ✘py35
                 # On python 2, reading from stdin gives you bytes, which must
                 # be decoded.
                 self._source = decode_string_using_source_encoding(
