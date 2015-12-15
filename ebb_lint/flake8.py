@@ -86,7 +86,7 @@ if six.PY3:  # ✘py27
     def grammar_for_future_features(future_features):
         return pygram.python_grammar_no_print_statement
 
-else:  # ✘py33 ✘py34
+else:  # ✘py33 ✘py34 ✘py35
     def grammar_for_future_features(future_features):
         if 'print_function' in future_features:
             return pygram.python_grammar_no_print_statement
@@ -233,7 +233,7 @@ class EbbLint(object):
         if self._source is None:
             if self.filename != 'stdin':
                 self._source = read_file_using_source_encoding(self.filename)
-            elif six.PY2:  # ✘py33 ✘py34
+            elif six.PY2:  # ✘py33 ✘py34 ✘py35
                 # On python 2, reading from stdin gives you bytes, which must
                 # be decoded.
                 self._source = decode_string_using_source_encoding(
@@ -291,6 +291,9 @@ class EbbLint(object):
                 if not pattern.match(node, results):
                     continue
                 for k in extra.get('comments_for', ()):
+                    # XXX: this doesn't use `k` for finding the node; `k` is
+                    # supposed to name a specific node, but it isn't used when
+                    # choosing which node is added to results.
                     results[k + '_comments'] = [
                         c for c, _ in find_comments(node.prefix)]
                 if extra.get('pass_filename', False):

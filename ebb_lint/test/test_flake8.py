@@ -406,6 +406,30 @@ spam  # eggs $L303$# noqa
 $L204$'a' 'b'  $L303$# noqa
 
     ''',
+
+    # Oh boy these following two cases need explanation. The prefix of the
+    # 'spam' node in both of these cases ends with a literal \ followed by a
+    # newline, which cannot be tokenized by generate_tokens because it expects
+    # something to follow that sequence. This is one hell of a special case,
+    # but it made flake8 fail hard on valid syntax. The first case is a prefix
+    # containing no comment, and the second case also includes a comment which
+    # requires scanning.
+
+    '''
+
+x = \\
+'spam'
+
+    ''',
+
+    '''
+
+x = (
+$L303$# noqa
+\\
+'spam')
+
+    ''',
 ]
 
 

@@ -78,7 +78,7 @@ def check_for_print(p):
     pass_filename=True, pass_future_features=True,
     python_disabled_version=(3, 0))
 def check_for_implicit_relative_imports(
-        filename, future_features, mod):  # ✘py33 ✘py34
+        filename, future_features, mod):  # ✘py33 ✘py34 ✘py35
     if 'absolute_import' in future_features:
         return
     [mod] = mod
