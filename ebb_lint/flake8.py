@@ -23,6 +23,16 @@ _pep8_noqa = pep8.noqa
 pep8.noqa = lambda ign: False
 
 
+def tokenize_source_string(s, base_byte=0):
+    fobj = io.StringIO(six.text_type(s).rstrip(' \t\r\n\\'))
+    lines = Lines(fobj)
+    fobj.seek(0)
+    for typ, tok, spos, epos, _ in tokenize.generate_tokens(fobj.readline):
+        yield typ, tok, Interval(
+            lines.byte_of_pos(*spos) + base_byte,
+            lines.byte_of_pos(*epos) + base_byte)
+
+
 # detect_future_features isn't fully covered, but I don't really care, because
 # I don't want to rewrite it. Maybe if it becomes more relevant I'll pull it
 # out of this suite and actually properly unit test it, but right now I feel
@@ -30,9 +40,9 @@ pep8.noqa = lambda ign: False
 # enough to do anything else. It's stolen from lib2to3 directly. Why was this a
 # private function? Ugh.
 
-def detect_future_features(infile):  # pragma: nocover
+def detect_future_features(s):  # pragma: nocover
     have_docstring = False
-    gen = tokenize.generate_tokens(infile.readline)
+    gen = tokenize_source_string(s)
 
     def advance():
         tok = next(gen)
@@ -85,21 +95,21 @@ else:  # ✘py33 ✘py34
 
 
 def find_comments(s, base_byte=0):
-    fobj = io.StringIO(six.text_type(s))
-    lines = Lines(fobj)
-    fobj.seek(0)
-    for typ, tok, spos, epos, _ in tokenize.generate_tokens(fobj.readline):
+    for typ, tok, interval in tokenize_source_string(s, base_byte=base_byte):
         if typ == tokenize.COMMENT:
-            yield tok, Interval(
-                lines.byte_of_pos(*spos) + base_byte,
-                lines.byte_of_pos(*epos) + base_byte)
+            yield tok, interval
+
+
+def decode_string_using_source_encoding(b):
+    encoding = tokenize.detect_encoding(io.BytesIO(b).readline)[0]
+    return b.decode(encoding)
 
 
 def read_file_using_source_encoding(filename):
     with open(filename, 'rb') as infile:
         encoding = tokenize.detect_encoding(infile.readline)[0]
-    with io.open(filename, 'r', encoding=encoding) as infile:
-        return infile.read()
+    with io.open(filename, 'r', encoding=encoding) as infile_with_encoding:
+        return infile_with_encoding.read()
 
 
 def parse_source(driver, source):
@@ -221,7 +231,16 @@ class EbbLint(object):
     @property
     def source(self):
         if self._source is None:
-            self._source = read_file_using_source_encoding(self.filename)
+            if self.filename != 'stdin':
+                self._source = read_file_using_source_encoding(self.filename)
+            elif six.PY2:  # ✘py33 ✘py34
+                # On python 2, reading from stdin gives you bytes, which must
+                # be decoded.
+                self._source = decode_string_using_source_encoding(
+                    pep8.stdin_get_value())
+            else:  # ✘py27
+                # On python 3, reading from stdin gives you text.
+                self._source = pep8.stdin_get_value()
         return self._source
 
     @property
@@ -247,8 +266,7 @@ class EbbLint(object):
         return lineno, column, message, type(self)
 
     def run(self):
-        with open(self.filename, 'r') as infile:
-            self.future_features = detect_future_features(infile)
+        self.future_features = detect_future_features(self.source)
         d = driver.Driver(
             grammar_for_future_features(self.future_features),
             convert=pytree.convert)
