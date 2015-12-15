@@ -6,6 +6,7 @@
 /.cache
 /.coverage
 /htmlcov*
+/coverage.xml
 /dist
 /build
 /wheelhouse

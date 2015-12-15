@@ -6,5 +6,5 @@ omit =
 
 [report]
 exclude_lines =
-    ✘$TOX_ENVNAME
+    ✘${TOX_ENVNAME}
     pragma: no ?cover
