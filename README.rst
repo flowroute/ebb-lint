@@ -15,6 +15,10 @@
  ebb-lint
 ==========
 
+.. attention::
+   This project is now abandoned.
+   Please update your links to https://github.com/habnabit/ebb-lint instead.
+
 It's a `flake8`_ plugin!
 It lints for style problems!
 To activate it::
