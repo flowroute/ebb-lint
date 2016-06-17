@@ -24,7 +24,8 @@ extras_require['all'] = list({
 
 
 install_requires = [
-    'flake8 >= 2.5.1',
+    'flake8 >= 2.5.1,< 2.6.0',
+    'pep8',
     'intervaltree',
     'six',
     'venusian',
