@@ -6,7 +6,7 @@ import functools
 import re
 import sys
 
-import pep8
+import pycodestyle
 import pytest
 import six
 from flake8.engine import get_parser
@@ -1189,14 +1189,15 @@ if six.PY2:
         clean_source, error_locations = find_error_locations(source)
         clean_source_bytes = clean_source.encode('utf-8')
         monkeypatch.setattr(
-            pep8, 'stdin_get_value', lambda: clean_source_bytes)
+            pycodestyle, 'stdin_get_value', lambda: clean_source_bytes)
         assert_ebb_lint(clean_source, 'stdin', error_locations)
 
 else:
     @pytest.mark.parametrize('source', all_sources)
     def test_linting_with_stdin_text(monkeypatch, source):
         clean_source, error_locations = find_error_locations(source)
-        monkeypatch.setattr(pep8, 'stdin_get_value', lambda: clean_source)
+        monkeypatch.setattr(pycodestyle, 'stdin_get_value',
+                            lambda: clean_source)
         assert_ebb_lint(clean_source, 'stdin', error_locations)
 
 
